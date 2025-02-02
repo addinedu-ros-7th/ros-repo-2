@@ -183,6 +183,7 @@ class WindowClass(QMainWindow, from_class) :
         self.mouse_y = event.y()
 
         self.pathPoint.append([self.mouse_x - self.pointMap.x(), self.mouse_y - self.pointMap.y()])
+        time.sleep(0.05)
         # print([self.mouse_x, self.mouse_y])
 
     def mouseReleaseEvent(self, event):
