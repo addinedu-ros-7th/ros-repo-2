@@ -2,144 +2,202 @@ import socket
 import numpy as np
 import cv2
 from ultralytics import YOLO
+from transforms3d.euler import quat2euler
+import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import PoseStamped, PointStamped
+from visualization_msgs.msg import Marker
 
-# variables
+class CameraUDPClient(Node):
+    def __init__(self):
+        super().__init__('camera_udp_client')
+        
+        # udp setting
+        udp_ip = "0.0.0.0"
+        udp_port = 34343
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.bind((udp_ip, udp_port))
+        self.get_logger().info(f"Listening for UDP packets on {udp_ip}:{udp_port}...")
 
-# udp ip and port
-udp_ip = "0.0.0.0"  # all ip allow
-udp_port = 34343
+        # camera intrinsic matrix
+        self.K = np.array([[273.04999718, 0, 155.82542991], [0, 274.11381476, 121.70811418], [0, 0, 1]])
 
-# socket base variables
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock.bind((udp_ip, udp_port))
-print(f"Listening for UDP packets on {udp_ip}:{udp_port}...")
+        # camera center
+        self.c_x = self.K[0, 2]
+        self.c_y = self.K[1, 2]
 
-K = np.array(
-    [
-        [273.04999718, 0, 155.82542991],
-        [0, 274.11381476, 121.70811418],
-        [0, 0, 1]
-    ]
-)
+        # camera focal length
+        self.f_x = self.K[0, 0]
+        self.f_y = self.K[1, 1]
 
-# 왜곡 계수
-dist = np.array([[-0.0208246, 1.06411238, 0.00400323, 0.00484108, -3.84164103]])             
+        # real diameter
+        self.REAL_DIAMETER = 40
 
-# camera 주점 좌표
-c_x = K[0, 2]
-c_y = K[1, 2]
+        # distance offset
+        self.distance_offset = 20
 
-# camera 초점 좌표
-f_x = K[0, 0]
-f_y = K[1, 1]
+        # camera resolution
+        self.camera_resolution_x = 320
+        self.camera_resolution_y = 240
 
-# ping pong distance offset
-distance_offset = 20 # 40 mm / 2 -> 20 mm 탁구공의 중점
+        # 카메라 위치 (로봇 기준)
+        self.camera_offset_x = 0.06  # 로봇 앞쪽 6cm
+        self.camera_offset_y = 0.0   # 로봇 정중앙 (좌우 오프셋 없음)
+        self.camera_offset_z = -0.06  # 바닥 아래로 6cm
 
-# camera 해상도
-camera_resolution_x = 320
-camera_resolution_y = 240
+        self.robot_position = np.zeros(3)  # x, y, z
+        self.robot_orientation = [0, 0, 0, 1]  # 쿼터니언 (x, y, z, w)
 
-# ping pong size ( mm )
-REAL_DIAMETER= 40
+        # model
+        self.model = YOLO("./best.pt")
 
-# test ping pong list
-ping_pong_coordinates = []
+        # ping pong coordinates
+        self.ping_pong_coordinates = []
 
-# ping pong detect yolov8 model load
-model = YOLO("./model_train/best.pt")
+        # robot position and direction
+        self.robot_position_x = 0.0
+        self.robot_position_y = 0.0
+        self.robot_position_z = 0.0
+        self.yaw = 0.0
+        self.pitch = 0.0
+        self.roll = 0.0
 
-while True:
-    try:
-        # get image data
-        data, addr = sock.recvfrom(65536)
+        # robot 3d world position and orientation subscriber
+        self.subscription = self.create_subscription(
+            PoseStamped,
+            '/tracked_pose',
+            self.pose_callback,
+            10
+        )
 
-        # transtle image data 
-        nparr = np.frombuffer(data, np.uint8)
-        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        # 퍼블리셔 설정
+        self.point_publisher = self.create_publisher(PointStamped, 'detected_points', 10)
+        self.marker_publisher = self.create_publisher(Marker, 'detected_markers', 10)
 
-        if frame is not None:
-            # cv2.imshow("Received Frame", frame)
-            frame = cv2.resize(frame, (camera_resolution_x, camera_resolution_y))
+    def pose_callback(self, msg):
+        # robot 3d world position and orientation
+        position = msg.pose.position
+        orientation = msg.pose.orientation
+        self.robot_position_x = position.x
+        self.robot_position_y = position.y
+        self.roll, self.pitch, self.yaw = quat2euler([orientation.w, orientation.x, orientation.y, orientation.z])
+        self.get_logger().info(f"Updated robot position: ({self.robot_position_x}, {self.robot_position_y}), yaw: {self.yaw}")
 
-            # detect ping pong
-            result = model(frame, verbose=False )
+    def publish_point(self, world_x, world_y, world_z):
+        point_msg = PointStamped()
+        point_msg.header.frame_id = "map"  # SLAM 맵의 프레임 ID
+        point_msg.header.stamp = self.get_clock().now().to_msg()
+        point_msg.point.x = world_x
+        point_msg.point.y = world_y
+        point_msg.point.z = world_z
+        self.point_publisher.publish(point_msg)
 
-            # show results
-            detected_frame = result[0].plot()
+    def publish_marker(self, world_x, world_y, world_z, marker_id):
+        marker_msg = Marker()
+        marker_msg.header.frame_id = "map"
+        marker_msg.header.stamp = self.get_clock().now().to_msg()
+        marker_msg.type = Marker.SPHERE
+        marker_msg.action = Marker.ADD
+        marker_msg.id = marker_id  # 고유한 ID 설정
+        marker_msg.pose.position.x = world_x
+        marker_msg.pose.position.y = world_y
+        marker_msg.pose.position.z = world_z
+        marker_msg.scale.x = 0.1  # 마커의 크기
+        marker_msg.scale.y = 0.1
+        marker_msg.scale.z = 0.1 
+        marker_msg.color.a = 1.0  # 투명도
+        marker_msg.color.r = 1.0  # 빨간색
+        marker_msg.color.g = 0.0
+        marker_msg.color.b = 0.0
+        self.marker_publisher.publish(marker_msg)
 
-            # if multiple ping pong balls are detected
-            for result in result[0].boxes:
+    def process_frame(self):
+        try:
+            data, addr = self.sock.recvfrom(65536)
+            nparr = np.frombuffer(data, np.uint8)
+            frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-                # detecting box locate
-                box = result.xyxy[0]
-                x1, y1, x2, y2 = map(int, box[:4])
+            if frame is not None:
+                frame = cv2.resize(frame, (self.camera_resolution_x, self.camera_resolution_y))
+                result = self.model(frame, verbose=False)
+                detected_frame = result[0].plot()
 
-                # ping pong center locate
-                x_center = int(( x1 + x2 ) / 2 )
-                y_center = int(( y1 + y2 ) / 2 )
+                for idx, result in enumerate(result[0].boxes):
+                    box = result.xyxy[0]
+                    x1, y1, x2, y2 = map(int, box[:4])
 
-                print(f"인식된 탁구공 픽셀 좌표 : {x_center, y_center}")
+                    x_center = int((x1 + x2) / 2)
+                    pixel_width = x2 - x1
 
-                # pixel width
-                pixel_width = x2 - x1
+                    if pixel_width > 0:
+                        distance = ((self.f_x * self.REAL_DIAMETER) / pixel_width) * 0.001  # mm to m
+                        camera_x = ((x_center - self.c_x) * distance) / self.f_x
+                        camera_y = -0.06  # y는 항상 로봇 기준 바닥에서 -6cm
+                        camera_z = distance
 
-                print(f"인식된 탁구공 픽셀 너비 : {pixel_width}")   
+                        # 카메라 -> 로봇 좌표 변환
+                        robot_x = camera_z + self.camera_offset_x  # 카메라 z축 -> 로봇 x축
+                        robot_y = -camera_x + self.camera_offset_y  # 카메라 x축 -> 로봇 y축
 
-                # distance
-                if pixel_width > 0:
-                    distance = (( f_x * REAL_DIAMETER ) / pixel_width ) + distance_offset
-                    z_distance = distance
-                else:
-                    distance = -1 # error value
-                    z_distance = -1
-                
-                print(f"인식된 탁구공 거리 : {distance} mm")
+                        # 로봇 -> 지도 좌표 변환
+                        R = self.quaternion_to_rotation_matrix(*self.robot_orientation)
+                        map_coords = np.dot(R, [robot_x, robot_y, 0]) + self.robot_position
 
-                # conversion to camera coordinate system , detect ping pong locate - camera center locate
-                camera_x = (( x_center - c_x ) * distance) / f_x
-                camera_y = (( y_center - c_y ) * distance) / f_y 
-                camera_z = z_distance
+                        self.publish_point(map_coords[0], map_coords[1], 0.0)
+                        self.publish_marker(map_coords[0], map_coords[1], 0.0, idx)
 
-                print(f"탁구공 좌표 - 카메라 주점 좌표 * 거리 / 초점 좌표 : {camera_x, camera_y, camera_z}")
+                        self.get_logger().info(f"Published to map: {map_coords}")
 
-                ping_pong_coordinates.append(( camera_x, camera_y , camera_z ))
+                cv2.imshow("ping pong", detected_frame)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    rclpy.shutdown()
 
-                # detecting ping pong circle draw
-                cv2.circle(detected_frame, (x_center, y_center), 5, (0,0,255), -1)
+        except Exception as e:
+            self.get_logger().error(f"Error: {e}")
 
-                label = f"Distance: {distance:.2f} mm"
-                cv2.putText(detected_frame, label, (x1 + 5, y1 + 15), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-
-            # imshow!!!
-            cv2.imshow("ping pong", detected_frame)
-
-            # relative coordinates of the ping-pong by camera
-            camera_position_frame = np.zeros(( camera_resolution_y, camera_resolution_x, 3), dtype=np.uint8 )
-
-            for coord in ping_pong_coordinates:
-                X, Y = coord[:2]
-                pos_x = int(X) + 160
-                pos_y = int(-Y) + 120
-
-                print(f"카메라 좌표 : {pos_x, pos_y}")
-
-                if 0 <= pos_x < camera_resolution_x and 0 <= pos_y < camera_resolution_y:
-                    cv2.circle(camera_position_frame, (pos_x, pos_y), 5, (255, 0, 0), -1)
-                    cv2.circle(camera_position_frame, (160, 120), 5, (0, 255, 0), -1)
-
-            # imshow!!!!!!!!!
-            cv2.imshow("Camera Coordinate System", camera_position_frame)
-
-            # q 누르면 종료 ~
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+    def update_coordinates(self, new_coord):
+        is_duplicate = False
+        for coord in self.ping_pong_coordinates:
+            # 두 좌표 간의 거리 계산
+            distance = np.linalg.norm(np.array(coord) - np.array(new_coord))
+            if distance < self.REAL_DIAMETER: # 40 mm 이내면 중복으로 간주
+                is_duplicate = True
                 break
 
-    except Exception as e:
-        print(f"Error: {e}")
-        break
+        if not is_duplicate:
+            self.ping_pong_coordinates.append(new_coord)
+            self.get_logger().info(f"Updated coordinates: {self.ping_pong_coordinates}")
+        else:
+            self.get_logger().info(f"Duplicate coordinate detected: {new_coord}")
 
-# 자원 해제
-sock.close()
-cv2.destroyAllWindows()
+    def quaternion_to_rotation_matrix(self, qx, qy, qz, qw):
+        """쿼터니언을 회전 행렬로 변환"""
+        R = np.zeros((3, 3))
+        R[0, 0] = 1 - 2 * (qy**2 + qz**2)
+        R[0, 1] = 2 * (qx * qy - qz * qw)
+        R[0, 2] = 2 * (qx * qz + qy * qw)
+        R[1, 0] = 2 * (qx * qy + qz * qw)
+        R[1, 1] = 1 - 2 * (qx**2 + qz**2)
+        R[1, 2] = 2 * (qy * qz - qx * qw)
+        R[2, 0] = 2 * (qx * qz - qy * qw)
+        R[2, 1] = 2 * (qy * qz + qx * qw)
+        R[2, 2] = 1 - 2 * (qx**2 + qy**2)
+        return R
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = CameraUDPClient()
+    try:
+        while rclpy.ok():
+            rclpy.spin_once(node)
+            node.process_frame()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.sock.close()
+        cv2.destroyAllWindows()
+        node.destroy_node()
+        rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
