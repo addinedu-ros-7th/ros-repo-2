@@ -3,6 +3,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+RoboSphereAIServer/PingPongBallDetect/model_train/test/
+RoboSphereAIServer/PingPongBallDetect/model_train/train/
+RoboSphereAIServer/PingPongBallDetect/model_train/valid/
+RoboSphereAIServer/PingPongBallDetect/model_train/runs/
+
 # C extensions
 *.so
 
