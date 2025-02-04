@@ -2,7 +2,7 @@
 <launch>
     <set_env name="RCUTILS_LOGGING_BUFFERED_STREAM" value="1"/>
 
-    <arg name="namespace" default=""/>
+    <arg name="namespace" default="pinky1"/>
     <arg name="map" default="$(find-pkg-share pinky_navigation)/map/pinklab.yaml"/>
     <arg name="use_sim_time" default="False"/>
     <arg name="params_file" default="$(find-pkg-share pinky_navigation)/params/nav2_params.yaml"/>
@@ -22,7 +22,7 @@
                        'velocity_smoother']"/>
 
     <group>
-        <push-ros-namespace namespace="$(var namespace)"/>
+        <push-ros-namespace namespace="$(arg namespace)"/>
         <node pkg="rclcpp_components" exec="component_container_isolated" name='$(var container_name)' output="screen" args="--ros-args --log-level $(var log_level)">
             <param from="$(var params_file)"/>
             <param name='map' value="$(var map)"/>
@@ -36,6 +36,7 @@
         <include file="$(find-pkg-share pinky_cartographer)/launch/cartographer.launch.xml">
             <arg name="configuration_basename" value="$(var params_cartographer)"/>
             <arg name="use_nav2" value="True"/>
+            <arg name="namespace" value="$(arg namespace)"/>
         </include>
 
         <include file="$(find-pkg-share pinky_navigation)/launch/localization_launch.xml">
@@ -47,6 +48,7 @@
             <arg name="use_respawn" value="$(var use_respawn)"/>
             <arg name="container_name" value="$(var container_name)"/>
             <arg name='lifecycle_nodes' value="$(var lifecycle_nodes_local)"/>
+            <arg name="namespace" value="$(arg namespace)"/>
         </include>
 
         <include file="$(find-pkg-share pinky_navigation)/launch/navigation_launch.xml">
@@ -57,6 +59,7 @@
             <arg name="use_respawn" value="$(var use_respawn)"/>
             <arg name="container_name" value="$(var container_name)"/>
             <arg name='lifecycle_nodes' value="$(var lifecycle_nodes_nav)"/>
+            <arg name="namespace" value="$(arg namespace)"/>
         </include>
     </group>
 
