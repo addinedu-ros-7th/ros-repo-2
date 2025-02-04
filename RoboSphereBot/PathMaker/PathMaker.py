@@ -12,7 +12,7 @@ from PIL import Image
 import yaml
 
 # ui
-from_class = uic.loadUiType("/home/kjj73/dev_ws/Project/final_project/pgmtest.ui")[0]
+from_class = uic.loadUiType("/home/kjj73/dev_ws/Project/final_project/PathMaker.ui")[0]
 
 class WindowClass(QMainWindow, from_class) :
     def __init__(self):
@@ -34,11 +34,14 @@ class WindowClass(QMainWindow, from_class) :
         self.pointMap.raise_()
         self.pointMap.raise_()
 
-        with Image.open('/home/kjj73/dev_ws/Project/final_project/map1.pgm') as pgm_image:
+        with Image.open('/home/kjj73/dev_ws/Project/final_project/fourtable.pgm') as pgm_image:
             self.mapWidth, self.mapHeight = pgm_image.size
             self.img_array = np.array(pgm_image)
 
-        with open('/home/kjj73/dev_ws/Project/final_project/map1.yaml', 'r') as file:
+        self.mapLimitX = (self.mapWidth * 5) / 100
+        self.mapLimitY = (self.mapHeight * 5) / 100
+
+        with open('/home/kjj73/dev_ws/Project/final_project/fourtable.yaml', 'r') as file:
             self.yaml = yaml.safe_load(file)
 
         self.pgmMap.setGeometry(10,100,self.mapWidth * 8, self.mapHeight * 8)
@@ -47,7 +50,7 @@ class WindowClass(QMainWindow, from_class) :
         self.pointMap.setGeometry(10,100,self.mapWidth * 8, self.mapHeight * 8)
 
         self.pixmap = QPixmap()
-        self.pixmap.load('/home/kjj73/dev_ws/Project/final_project/map1.pgm')
+        self.pixmap.load('/home/kjj73/dev_ws/Project/final_project/fourtable.pgm')
         self.pixmap = self.pixmap.scaled(self.pgmMap.width(), self.pgmMap.height())
         self.pgmMap.setPixmap(self.pixmap)
 
@@ -65,7 +68,7 @@ class WindowClass(QMainWindow, from_class) :
 
         self.pixmapWidth = self.pgmMap.width()
         self.pixmapHeight = self.pgmMap.height()
-        print(self.mapWidth, self.mapHeight)
+        print("map width, height : ", self.mapWidth, self.mapHeight)
         print(self.pixmapWidth, self.pixmapHeight, self.realAreaSize)
         # self.labelPixmap.resize(self.pixmap.width(), self.pixmap.height())
 
@@ -97,10 +100,17 @@ class WindowClass(QMainWindow, from_class) :
         if not np.any(npPathPoint):
             print("Empty")
         else :
-            npPathPoint[:,1] = ((self.pgmMap.height() / 8 / 20) - npPathPoint[:,1])
-            npPathPoint = npPathPoint * -1
+            print("limit x , y : ", self.mapLimitX, self.mapLimitY)
+            # npPathPoint[:, 0] = npPathPoint[:, 0] + (self.yaml['origin'][0])
+            # npPathPoint[:, 1] = npPathPoint[:, 1] + (self.yaml['origin'][1])
+            npPathPoint[:, 0] = npPathPoint[:, 0] - (self.mapLimitX - (self.mapLimitX - abs(self.yaml['origin'][0])))
+            npPathPoint[:, 1] = (npPathPoint[:, 1] - (self.mapLimitY - abs(self.yaml['origin'][1]))) * -1
 
-        # print(self.npPathPoint)
+        # npPathPoint[:,0]
+
+        # print(self.pathPoint)
+        npPathPoint = np.round(npPathPoint, 6)
+        print(npPathPoint)
         
         why = self.requestTime.currentText()
         where = self.tableNumber.currentText()
@@ -125,12 +135,12 @@ class WindowClass(QMainWindow, from_class) :
         if not np.any(arr):
             print("Empty")
         else :
-            arr = arr * -1
+            # arr = arr * -1
             arr[:,0] = (arr[:,0] * 8 * 20)
-            arr[:,1] = (self.pgmMap.height() - (arr[:,1] * 8 * 20))
+            arr[:,1] = (arr[:,1] * 8 * 20)
             arr = np.round(arr).astype(int)
 
-        print(arr)
+        # print(arr)
         for i in range(0, int(len(arr))):
             x = int(arr[i][0] / self.realAreaSize) * self.mapRatio
             y = int(arr[i][1] / self.realAreaSize) * self.mapRatio
@@ -148,14 +158,14 @@ class WindowClass(QMainWindow, from_class) :
         self.drawOrigin()
         self.drawGrid()
         self.update()
-        print(self.pathPoint)
+        # print(self.pathPoint)
 
     def createMap(self):
         pathPainter = QPainter(self.pointMap.pixmap())
         pathPainter.setPen(QPen(Qt.red, 1, Qt.SolidLine))
         pathPainter.setBrush(QColor(0, 255, 255, 100))  # 투명한 하늘색
 
-        print(self.pathPoint)
+        # print(self.pathPoint)
         for i in range(0, int(len(self.pathPoint))):
             # for j in range(0, int(self.pathPoint.shape[1])):
             # if(self.mapArray[i][j] == 255):
@@ -205,6 +215,10 @@ class WindowClass(QMainWindow, from_class) :
     
     def drawOrigin(self):
         originPainter = QPainter(self.pointMap.pixmap())
+        originPainter.setPen(QPen(Qt.red, 3, Qt.SolidLine))
+        originPainter.drawLine(self.pgmMap.width() // 2, 0, self.pgmMap.width() // 2, self.pgmMap.height())
+        originPainter.drawLine(0, self.pgmMap.height() // 2, self.pgmMap.width(), self.pgmMap.height() // 2)
+
         originPainter.setPen(QPen(Qt.blue, 3, Qt.SolidLine))
 
         x = int((self.yaml['origin'][0] * -1 * 100) / 5) * 8
