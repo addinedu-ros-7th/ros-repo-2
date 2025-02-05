@@ -13,9 +13,7 @@ task_queue = PriorityQueue()
 robot_positions = {}
 
 def receive_tcp_signal():
-
     try:
-
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind(('localhost', 9151))  # 서버 주소와 포트
             s.listen()
@@ -164,7 +162,8 @@ class Scheduler(Node):
             # command 2 is all area, command 3 is user requests
             self.get_logger().info(f"Table all task: command={command}, table_id={table_id}, target locate={target}")
 
-            make_path( get_task_robot_id(target), command, table_id, target)
+            # target = 
+            make_path(get_task_robot_id(target), command, table_id, target)
 
         else:
             self.get_logger().info(f"Unknown command: {command}")
