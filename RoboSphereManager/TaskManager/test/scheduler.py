@@ -6,6 +6,9 @@ import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import PoseStamped
 from example_interfaces.srv import Trigger
+from interface_package.srv import PathRequest
+from interface_package.msg import PointAndStatus
+from geometry_msgs.msg import Point  # 좌표를 다루기 위해 필요
 
 task_queue = PriorityQueue()
 
@@ -59,14 +62,14 @@ class PathPlannerClient(Node):
 
     def __init__(self):
         super().__init__('path_planner_client')
-        self.client = self.create_client(Trigger, 'path_planner_service')
+        self.client = self.create_client(PathRequest, 'path_planner_service')
         while not self.client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('Service not available, waiting again...')
 
     def send_path_request(self, robot_id, command, table_id, target):
         # Create a request
-        request = Trigger.Request()
-        request.data = f"Robot ID: {robot_id}, Command: {command}, Table ID: {table_id}, Target: {target}"
+        request = PathRequest.Request()
+        request.request_data = f"Robot ID: {robot_id}, Command: {command}, Table ID: {table_id}, Target: {target}"
         
         # Call the service
         future = self.client.call_async(request)
@@ -77,16 +80,18 @@ class PathPlannerClient(Node):
             self.get_logger().error('Service call failed')
 
 def make_path(robot_id, command, table_id, target):
-    # Create a node for the service client
-    rclpy.init()
+    if robot_id is None:
+        print("No suitable robot found, skipping task.")
+        return
+
+    # 기존의 `rclpy.init()` 제거
     path_planner_client = PathPlannerClient()
     
-    # Send the path request
+    # 서비스 요청 전송
     path_planner_client.send_path_request(robot_id, command, table_id, target)
     
-    # Shutdown the node after sending the request
+    # 노드 정리
     path_planner_client.destroy_node()
-    rclpy.shutdown()
 
 class RobotPoseSubscriber(Node):
 
@@ -97,7 +102,7 @@ class RobotPoseSubscriber(Node):
             PoseStamped,
             f'/{self.namespace}/tracked_pose',
             self.listener_callback,
-            10)
+            3)
         self.subscription  # prevent unused variable warning
         self.current_pose = None
 
@@ -129,21 +134,41 @@ class RobotPoseSubscriber(Node):
 
 class Scheduler(Node):
 
-    def __init__(self):
+    def __init__(self, pinky1_subscriber, pinky2_subscriber):
         super().__init__('scheduler')
 
-        # timer to add periodic task
+        # RobotPoseSubscriber 인스턴스 저장
+        self.robot_subscribers = {
+            'pinky1': pinky1_subscriber,
+            'pinky2': pinky2_subscriber
+        }
+
+        # 주기적 작업 추가 (이 부분이 빠졌을 가능성이 높음)
         self.timer = self.create_timer(300.0, self.add_periodic_task)
 
-        # task executor
+        # Task 실행 쓰레드 시작
         self.task_executor = threading.Thread(target=self.execute_tasks)
         self.task_executor.start()
 
-    # add periodic task to queue
     def add_periodic_task(self):
+        """주기적으로 실행될 작업을 큐에 추가하는 메서드"""
         task = (1, None, None)
         task_queue.put(task)
         self.get_logger().info(f"Periodic task added to queue: {task}")
+
+    def get_task_robot_id(self, target):
+        # 모든 로봇 중 가장 가까운 로봇 찾기
+        closest_robot = None
+        min_distance = float('inf')
+
+        for namespace, subscriber in self.robot_subscribers.items():
+            if subscriber.current_pose is not None:
+                distance = subscriber.calculate_distance(subscriber.current_pose, target)
+                if distance < min_distance:
+                    min_distance = distance
+                    closest_robot = namespace
+
+        return closest_robot
 
     def execute_tasks(self):
         while rclpy.ok():
@@ -155,15 +180,20 @@ class Scheduler(Node):
         command, target, table_id = task
 
         if command == 1:
-            # this command is for periodic task
-            self.get_logger().info(f"Periodic task: command={command}, start periodic robot task")
+            self.get_logger().info(f"Periodic(test) task: command={command}, start periodic robot task")
 
         elif command == 2 or command == 3:
-            # command 2 is all area, command 3 is user requests
-            self.get_logger().info(f"Table all task: command={command}, table_id={table_id}, target locate={target}")
+            self.get_logger().info(f"Table all task: command={command}, table_id={table_id}, target={target}")
 
-            # target = 
-            make_path(get_task_robot_id(target), command, table_id, target)
+            robot_id = "pinky1"
+            make_path(robot_id, command, table_id, target)
+            # 가장 가까운 로봇 ID 가져오기
+            # robot_id = self.get_task_robot_id(target)
+            # if robot_id:
+            #     make_path(robot_id, command, table_id, target)
+            #     # self.get_logger().info(f"Make Path: command={command}, target={target}, table_id={table_id}")
+            # else:
+            #     self.get_logger().warn("No available robot found for task!")
 
         else:
             self.get_logger().info(f"Unknown command: {command}")
@@ -181,19 +211,22 @@ def main(args=None):
     pinky1_subscriber = RobotPoseSubscriber('pinky1')
     pinky2_subscriber = RobotPoseSubscriber('pinky2')
 
-    # Create scheduler
-    scheduler = Scheduler()
+    # Create scheduler (구독자를 전달)
+    scheduler = Scheduler(pinky1_subscriber, pinky2_subscriber)
 
     # Spin all nodes
-    rclpy.spin(pinky1_subscriber)
-    rclpy.spin(pinky2_subscriber)
-    rclpy.spin(scheduler)
+    executor = rclpy.executors.MultiThreadedExecutor()
+    executor.add_node(pinky1_subscriber)
+    executor.add_node(pinky2_subscriber)
+    executor.add_node(scheduler)
 
-    # Destroy the nodes explicitly
-    pinky1_subscriber.destroy_node()
-    pinky2_subscriber.destroy_node()
-    scheduler.destroy_node()
-    rclpy.shutdown()
+    try:
+        executor.spin()
+    finally:
+        pinky1_subscriber.destroy_node()
+        pinky2_subscriber.destroy_node()
+        scheduler.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

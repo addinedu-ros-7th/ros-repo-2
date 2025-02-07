@@ -9,26 +9,58 @@ from example_interfaces.srv import Trigger
 from std_msgs.msg import Bool
 import time
 import numpy as np
+from interface_package.srv import PathRequest
+from interface_package.msg import PointAndStatus
+from geometry_msgs.msg import Point  # 좌표를 다루기 위해 필요
+from geometry_msgs.msg import PoseStamped
+import json
 
 
 class DynamicWaypointNavigator(Node):
     def __init__(self, namespace):
         super().__init__('dynamic_waypoint_navigator')
 
-        self.srv = self.create_service(Trigger, f'/{namespace}/task_and_path_listener', self.handle_task_request)
+        self.srv = self.create_service(PathRequest, f'/{namespace}/task_and_path_listener', self.handle_task_request)
+        self.status_publisher = self.create_publisher(PointAndStatus, f'/{namespace}/status_publisher', 3)
+        self.subscription = self.create_subscription(
+            PoseStamped,  # /tracked_pose가 PoseStamped 형식이라고 가정
+            # f'/{namespace}/tracked_pose_transfer',
+            "/pinky1/tracked_pose_transfer",
+            self.tracked_pose_callback,
+            3)
+        self.timer = self.create_timer(1.0, self.publish_message)
+        self.status = "Idle"
+        self.target = None
 
     def handle_task_request(self, request, response):
         # Log the received request data
-        self.get_logger().info(f'Received task request: {request.data}')
+        self.get_logger().info(f'Received path request: {request.request_data}')
+
+        if not request.request_data or not request.request_data.strip():
+            self.get_logger().error("Received empty request data.")
+            response.success = False
+            response.message = "Request data is empty."
+            return response
 
         try:
-            data = json.loads(request.data)  # JSON 문자열을 딕셔너리로 변환
-            target = np.array(data["target"])  # 리스트를 numpy 배열로 변환
+            # JSON 문자열을 딕셔너리로 변환
+            parsed_data = json.loads(request.request_data)
 
-            self.get_logger().info(f"Received Target: \n{target}")
+            robot_id = parsed_data.get("robot_id", "Unknown")
+            command = int(parsed_data.get("command", 0))
+            table_id = int(parsed_data.get("table_id", -1))
+            target_list = parsed_data.get("target", [[0, 0]])  # 기본값으로 2D 리스트 설정
+
+            # 리스트를 numpy 배열로 변환
+            target_array = np.array(target_list)
+
+            # self.get_logger().info(f"Received Target: \n{target}")
+            self.get_logger().info(f"Parsed Data -> Robot ID: {robot_id}, Command: {command}, Table ID: {table_id}, Target: {target_array}")
+
+            self.target = target_array
 
             # 웨이포인트 변환 및 theta 설정
-            self.waypoints = self.generate_waypoints(target)
+            self.waypoints = self.generate_waypoints(self.target)
 
             self.current_waypoint_index = 0  # 현재 목표 웨이포인트 인덱스
             self.robot_stopped = False  # 로봇 정지 여부
@@ -57,6 +89,8 @@ class DynamicWaypointNavigator(Node):
             # 웨이포인트 주행 시작
             self.send_goal()
 
+            self.status = "Walking"
+
             response.success = True
             response.message = "Task received successfully."
         except Exception as e:
@@ -64,6 +98,63 @@ class DynamicWaypointNavigator(Node):
             response.message = f"Error: {str(e)}"
         
         return response
+    
+    def tracked_pose_callback(self, msg):
+        """ /tracked_pose 메시지를 받아서 변환 후 /{namespace}/tracked_pose_transfer 로 퍼블리시 """
+        self.reception = PoseStamped()
+        self.reception.header = msg.header  # 기존 헤더 유지
+        self.reception.pose = msg.pose      # 기존 위치 & 자세 유지
+
+        # 변환된 데이터 퍼블리시
+        # self.publisher.publish(self.reception)
+        self.get_logger().info(f'📡 Published Converted Pose: {self.reception.pose.position.x}, {self.reception.pose.position.y}, {self.reception.pose.position.z}')
+    
+    def publish_message(self):
+        msg = PointAndStatus()
+        msg.status = self.status
+
+        # self.reception
+
+        if self.target != None:
+            # 현재 좌표 설정
+            msg.current_position = Point()
+            msg.current_position.x = self.reception.pose.position.x
+            msg.current_position.y = self.reception.pose.position.y
+            msg.current_position.z = self.reception.pose.position.z
+
+            # 시작 좌표 설정
+            msg.start_position = Point()
+            msg.start_position.x = self.target[0,0]
+            msg.start_position.y = self.target[0,1]
+            msg.start_position.z = np.arctan2(self.target[1,1] - self.target[0,1], self.target[1,0] - self.target[0,0]) 
+
+            # 목표 좌표 설정
+            msg.goal_position = Point()
+            msg.goal_position.x = self.target[-1,0]
+            msg.goal_position.y = self.target[-1,1]
+            msg.goal_position.z = np.arctan2(self.target[-1,1] - self.target[-2,1], self.target[-1,0] - self.target[-2,0]) 
+        else :
+            # 현재 좌표 설정
+            msg.current_position = Point()
+            msg.current_position.x = 0.0
+            msg.current_position.y = 0.0
+            msg.current_position.z = 0.0
+
+            # 시작 좌표 설정
+            msg.start_position = Point()
+            msg.start_position.x = 0.0
+            msg.start_position.y = 0.0
+            msg.start_position.z = 0.0
+
+            # 목표 좌표 설정
+            msg.goal_position = Point()
+            msg.goal_position.x = 0.0
+            msg.goal_position.y = 0.0
+            msg.goal_position.z = 0.0
+
+
+        self.status_publisher.publish(msg)
+        self.get_logger().info(f'Published: {msg}')
     
     def generate_waypoints(self, target):
         """각 웨이포인트의 theta 값을 다음 좌표를 향하도록 자동 설정"""
@@ -200,21 +291,21 @@ def main(args=None):
     """ROS 2 노드를 실행하는 메인 함수"""
     rclpy.init(args=args)
 
-    node = RobotService(namespace='pinky1')  # 네임스페이스 지정
 
-    node = DynamicWaypointNavigator()
-    task_planner_service = TaskListenerService()
+    # node = RobotService()  
+    node = DynamicWaypointNavigator(namespace='pinky1') # 네임스페이스 지정
+    # task_planner_service = TaskListenerService()
 
     try:
         rclpy.spin(node)
-        rclpy.spin(task_planner_service)
+        # rclpy.spin(task_planner_service)
 
     except KeyboardInterrupt:
         pass
 
     finally:
         node.destroy_node()
-        task_planner_service.destroy_node()
+        # task_planner_service.destroy_node()
         rclpy.shutdown()
 
 if __name__ == '__main__':

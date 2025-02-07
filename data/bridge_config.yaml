@@ -1,0 +1,10 @@
+bridges:
+  - topic_name: /pinky1/tracked_pose_transfer
+    type: geometry_msgs/msg/PoseStamped
+    from_domain: 74
+    to_domain: 73
+    qos:
+      reliability: reliable
+      durability: volatile
+      history: keep_last
+      depth: 10
