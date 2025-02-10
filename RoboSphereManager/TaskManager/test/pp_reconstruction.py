@@ -48,8 +48,25 @@ class DynamicWaypointNavigator(Node):
 
             robot_id = parsed_data.get("robot_id", "Unknown")
             command = int(parsed_data.get("command", 0))
-            table_id = int(parsed_data.get("table_id", -1))
-            target_list = parsed_data.get("target", [[0, 0]])  # 기본값으로 2D 리스트 설정
+
+            print(type(command))
+            if command == 4:
+                # table_id와 target을 JSON 문자열로 변환
+                print()
+                print(f"command : {command}")
+                print()
+                # "table_id"와 "target"을 실제 리스트로 변환
+                table_id = json.loads(parsed_data["table_id"])  # "[1, 2, 4]" 형식에서 실제 리스트로 변환
+                target_list = json.loads(parsed_data["target"])      # "[[...], [...]]" 형식에서 실제 2D 리스트로 변환
+
+                print(type(table_id), type(target_list))
+                print()
+            else :
+                print()
+                # print(f"command : {command}")
+                print()
+                table_id = int(parsed_data.get("table_id", -1))
+                target_list = parsed_data.get("target", [[0, 0]])  # 기본값으로 2D 리스트 설정
 
             # 리스트를 numpy 배열로 변환
             target_array = np.array(target_list)

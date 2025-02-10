@@ -37,7 +37,7 @@ def receive_tcp_signal():
         exit()
 
     finally:
-        print("celanup completed")            
+        print("clean up completed")            
 
 def process_signal(signal):
 
@@ -194,6 +194,10 @@ class Scheduler(Node):
             #     # self.get_logger().info(f"Make Path: command={command}, target={target}, table_id={table_id}")
             # else:
             #     self.get_logger().warn("No available robot found for task!")
+
+        elif command == 4:
+            robot_id = "pinky1"
+            make_path(robot_id, command, table_id, target)
 
         else:
             self.get_logger().info(f"Unknown command: {command}")

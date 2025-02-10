@@ -6,7 +6,6 @@ import urllib.request
 from PyQt5 import uic
 import numpy as np
 import heapq
-import numpy as np
 import time
 from PIL import Image
 import yaml
@@ -185,6 +184,18 @@ class WindowClass(QMainWindow, from_class) :
         grid = self.collision_cell_list
 
         self.path = self.astar(grid, start, goal)
+        self.npPath = np.array(self.path)
+        print(f"path : {self.path}")
+        path_resize = (self.npPath * self.mapRatio) + 1
+        print(f"path resize : {path_resize}")
+
+        path_resize = np.array(path_resize)
+        path_resize = ((path_resize / 8) / 20)
+
+        path_resize[:, 0] = path_resize[:, 0] - (self.mapLimitX - (self.mapLimitX - abs(self.yaml['origin'][0])))
+        path_resize[:, 1] = (path_resize[:, 1] - (self.mapLimitY - abs(self.yaml['origin'][1]))) * -1
+
+        print(path_resize)
         # print("경로:", self.path)
             # print(i[0], i[1])
         self.drawPath()
@@ -192,9 +203,11 @@ class WindowClass(QMainWindow, from_class) :
     def drawPath(self):
         path_painter = QPainter(self.pathMap.pixmap())
         if self.path != None:
+            print("painter path : ")
             for i in self.path:
                 path_painter.setBrush(QColor(139, 69, 19, 100))  # 투명한 갈색
                 path_painter.drawRect((int(i[0])*self.mapRatio + 1), (int(i[1])*self.mapRatio + 1), self.mapRatio, self.mapRatio)
+                print(f"{(int(i[0])*self.mapRatio + 1), (int(i[1])*self.mapRatio + 1)}")
                 self.update()
                 # time.sleep(0.125)
 
@@ -319,10 +332,12 @@ class WindowClass(QMainWindow, from_class) :
             # arr = arr * -1
             arr[:,0] = (arr[:,0] * 8 * 20)
             arr[:,1] = (arr[:,1] * 8 * 20)
-            arr = np.round(arr).astype(int)
-            print(arr)
 
-        print(arr//self.realAreaSize)
+            arr = np.round(arr).astype(int)
+
+            # print("arr:", arr)
+
+        # print(arr // self.realAreaSize)
         for i in range(0, int(len(arr))):
             x = int(arr[i][0] / self.realAreaSize) * self.mapRatio # Cell Size Complete
             y = int(arr[i][1] / self.realAreaSize) * self.mapRatio
