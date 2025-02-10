@@ -14,7 +14,7 @@ from interface_package.msg import PointAndStatus
 from geometry_msgs.msg import Point  # 좌표를 다루기 위해 필요
 from geometry_msgs.msg import PoseStamped
 import json
-
+import math
 
 class DynamicWaypointNavigator(Node):
     def __init__(self, namespace):
@@ -175,15 +175,19 @@ class DynamicWaypointNavigator(Node):
     
     def generate_waypoints(self, target):
         """각 웨이포인트의 theta 값을 다음 좌표를 향하도록 설정, 마지막 웨이포인트는 반대 방향"""
-        waypoints = [
-            {
-                "x": float(x),
-                "y": float(y),
-                "theta": math.atan2(target[i + 1][1] - y, target[i + 1][0] - x) if i < len(target) - 1 
-                        else math.atan2(y - target[i - 1][1], x - target[i - 1][0])  # 반대 방향
-            }
-            for i, (x, y) in enumerate(target)
-        ]
+        waypoints = []
+        for i in range(len(target)):
+            if i < len(target) - 1:  # 다음 좌표를 향하도록 설정
+                theta = math.atan2(target[i+1][1] - target[i][1], target[i+1][0] - target[i][0])
+            else:  # 마지막 웨이포인트는 반대 방향
+                theta = math.atan2(target[i][1] - target[i-1][1], target[i][0] - target[i-1][0]) + math.pi
+
+            waypoints.append({
+                "x": float(target[i][0]),
+                "y": float(target[i][1]),
+                "theta": round(theta, 2)
+            })
+        
         return waypoints
 
 
