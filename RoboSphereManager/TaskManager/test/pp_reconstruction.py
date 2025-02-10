@@ -20,6 +20,7 @@ class DynamicWaypointNavigator(Node):
     def __init__(self, namespace):
         super().__init__('dynamic_waypoint_navigator')
 
+        self.reception = PoseStamped()
         self.srv = self.create_service(PathRequest, f'/{namespace}/task_and_path_listener', self.handle_task_request)
         self.status_publisher = self.create_publisher(PointAndStatus, f'/{namespace}/status_publisher', 3)
         self.subscription = self.create_subscription(
@@ -118,7 +119,6 @@ class DynamicWaypointNavigator(Node):
     
     def tracked_pose_callback(self, msg):
         """ /tracked_pose 메시지를 받아서 변환 후 /{namespace}/tracked_pose_transfer 로 퍼블리시 """
-        self.reception = PoseStamped()
         self.reception.header = msg.header  # 기존 헤더 유지
         self.reception.pose = msg.pose      # 기존 위치 & 자세 유지
 
@@ -174,16 +174,18 @@ class DynamicWaypointNavigator(Node):
         self.get_logger().info(f'Published: {msg}')
     
     def generate_waypoints(self, target):
-        """각 웨이포인트의 theta 값을 다음 좌표를 향하도록 자동 설정"""
+        """각 웨이포인트의 theta 값을 다음 좌표를 향하도록 설정, 마지막 웨이포인트는 반대 방향"""
         waypoints = [
             {
                 "x": float(x),
                 "y": float(y),
-                "theta": math.atan2(target[i + 1][1] - y, target[i + 1][0] - x) if i < len(target) - 1 else 0.0
+                "theta": math.atan2(target[i + 1][1] - y, target[i + 1][0] - x) if i < len(target) - 1 
+                        else math.atan2(y - target[i - 1][1], x - target[i - 1][0])  # 반대 방향
             }
             for i, (x, y) in enumerate(target)
         ]
         return waypoints
+
 
     def ping_pong_callback(self, msg):
         """탁구공 감지 및 안정적인 좌표 확인 후 웨이포인트 추가"""

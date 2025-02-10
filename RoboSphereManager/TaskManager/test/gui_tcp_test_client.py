@@ -15,7 +15,7 @@ def send_signal_over_tcp(signal):
 # receive table_id and send signal over tcp
 def send_tcp_signal(command, table_id, target):
 
-    self.command_list = ["request", "routine", "exit", "collision"] # 요청 목록
+    command_list = ["request", "routine", "exit", "collision"] # 요청 목록
     # table_index = 0 # 테이블 번호
     # file_index = 0 # 파일 번호
 
