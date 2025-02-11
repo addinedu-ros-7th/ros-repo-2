@@ -26,7 +26,8 @@ class DynamicWaypointNavigator(Node):
         self.subscription = self.create_subscription(
             PoseStamped,  # /tracked_pose가 PoseStamped 형식이라고 가정
             # f'/{namespace}/tracked_pose_transfer',
-            "/pinky1/tracked_pose_transfer",
+            # "/pinky1/tracked_pose_transfer",.,
+            "/pinky1/tracked_pose",
             self.tracked_pose_callback,
             3)
         self.timer = self.create_timer(1.0, self.publish_message)
@@ -50,16 +51,16 @@ class DynamicWaypointNavigator(Node):
             robot_id = parsed_data.get("robot_id", "Unknown")
             command = int(parsed_data.get("command", 0))
 
-            print(type(command))
             if command == 4:
+                self.get_logger().info(f'Processing command {command}')
                 # table_id와 target을 JSON 문자열로 변환
-                print()
-                print(f"command : {command}")
-                print()
                 # "table_id"와 "target"을 실제 리스트로 변환
                 table_id = json.loads(parsed_data["table_id"])  # "[1, 2, 4]" 형식에서 실제 리스트로 변환
                 target_list = json.loads(parsed_data["target"])      # "[[...], [...]]" 형식에서 실제 2D 리스트로 변환
-            else :
+
+                self.get_logger().debug(f'Data types - table_id: {type(table_id)}, target_list: {type(target_list)}')
+            else:
+                self.get_logger().info(f'Processing command: {command}')
                 table_id = int(parsed_data.get("table_id", -1))
                 target_list = parsed_data.get("target", [[0, 0]])  # 기본값으로 2D 리스트 설정
 
@@ -116,56 +117,74 @@ class DynamicWaypointNavigator(Node):
         self.reception.header = msg.header  # 기존 헤더 유지
         self.reception.pose = msg.pose      # 기존 위치 & 자세 유지
 
-        # 변환된 데이터 퍼블리시
-        # self.publisher.publish(self.reception)
-        self.get_logger().info(f'📡 Published Converted Pose: {self.reception.pose.position.x}, {self.reception.pose.position.y}, {self.reception.pose.position.z}')
+        # tracked_pose_transfer 토픽으로 퍼블리시
+        self.publisher.publish(self.reception)
+        
+        # 좌표 정보는 INFO 레벨로 로깅
+        self.get_logger().info(
+            f'📡 Tracked Pose - '
+            f'Position: x={self.reception.pose.position.x}, '
+            f'y={self.reception.pose.position.y}, '
+            f'z={self.reception.pose.position.z}'
+        )
     
     def publish_message(self):
         msg = PointAndStatus()
         msg.status = self.status
 
-        # self.reception
+        # 현재 좌표 설정 (tracked_pose에서 받아온 현재 위치)
+        msg.current_position = Point()
+        msg.current_position.x = self.reception.pose.position.x
+        msg.current_position.y = self.reception.pose.position.y
+        msg.current_position.z = self.reception.pose.position.z
 
-        if self.target != None:
-            # 현재 좌표 설정
-            msg.current_position = Point()
-            msg.current_position.x = self.reception.pose.position.x
-            msg.current_position.y = self.reception.pose.position.y
-            msg.current_position.z = self.reception.pose.position.z
-
-            # 시작 좌표 설정
-            msg.start_position = Point()
-            msg.start_position.x = self.target[0,0]
-            msg.start_position.y = self.target[0,1]
-            msg.start_position.z = np.arctan2(self.target[1,1] - self.target[0,1], self.target[1,0] - self.target[0,0]) 
-
-            # 목표 좌표 설정
+        if self.target is not None:
+            # 목표가 설정된 경우
+            # 시작 좌표는 목표가 설정된 시점의 현재 위치로 고정
+            if not hasattr(self, 'start_position'):
+                self.start_position = Point()
+                self.start_position.x = self.reception.pose.position.x
+                self.start_position.y = self.reception.pose.position.y
+                self.start_position.z = self.reception.pose.position.z
+            
+            msg.start_position = self.start_position
+            
+            # 목표 좌표 설정 (경로의 마지막 지점)
             msg.goal_position = Point()
             msg.goal_position.x = self.target[-1,0]
             msg.goal_position.y = self.target[-1,1]
-            msg.goal_position.z = np.arctan2(self.target[-1,1] - self.target[-2,1], self.target[-1,0] - self.target[-2,0]) 
-        else :
-            # 현재 좌표 설정
-            msg.current_position = Point()
-            msg.current_position.x = 0.0
-            msg.current_position.y = 0.0
-            msg.current_position.z = 0.0
-
-            # 시작 좌표 설정
+            msg.goal_position.z = np.arctan2(
+                self.target[-1,1] - self.target[-2,1],
+                self.target[-1,0] - self.target[-2,0]
+            )
+        else:
+            # 목표가 없는 경우
+            # 시작 좌표는 현재 위치로 계속 업데이트
             msg.start_position = Point()
-            msg.start_position.x = 0.0
-            msg.start_position.y = 0.0
-            msg.start_position.z = 0.0
-
-            # 목표 좌표 설정
+            msg.start_position.x = self.reception.pose.position.x
+            msg.start_position.y = self.reception.pose.position.y
+            msg.start_position.z = self.reception.pose.position.z
+            
+            # 목표 좌표는 0으로 설정
             msg.goal_position = Point()
             msg.goal_position.x = 0.0
             msg.goal_position.y = 0.0
             msg.goal_position.z = 0.0
 
+            # 저장된 시작 위치 초기화
+            if hasattr(self, 'start_position'):
+                delattr(self, 'start_position')
 
+        # 메시지 발행
         self.status_publisher.publish(msg)
-        self.get_logger().info(f'Published: {msg}')
+        
+        # 좌표 정보는 INFO 레벨로 로깅
+        self.get_logger().info(
+            f'Status: {self.status}\n'
+            f'Current: ({msg.current_position.x}, {msg.current_position.y})\n'
+            f'Start: ({msg.start_position.x}, {msg.start_position.y})\n'
+            f'Goal: ({msg.goal_position.x}, {msg.goal_position.y})'
+        )
     
     def generate_waypoints(self, target):
         """각 웨이포인트의 theta 값을 다음 좌표를 향하도록 설정, 마지막 웨이포인트는 반대 방향"""
@@ -184,7 +203,6 @@ class DynamicWaypointNavigator(Node):
             self.get_logger().info(f"waypoints : {float(target[i][0]), float(target[i][1]), round(theta, 2)} |")
         
         return waypoints
-
 
     def ping_pong_callback(self, msg):
         """탁구공 감지 및 안정적인 좌표 확인 후 웨이포인트 추가"""
@@ -308,7 +326,6 @@ class DynamicWaypointNavigator(Node):
 def main(args=None):
     """ROS 2 노드를 실행하는 메인 함수"""
     rclpy.init(args=args)
-
 
     # node = RobotService()  
     node = DynamicWaypointNavigator(namespace='pinky1') # 네임스페이스 지정
