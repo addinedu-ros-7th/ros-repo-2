@@ -192,16 +192,25 @@ class Scheduler(Node):
         if command == 1:
             self.get_logger().info(f"Periodic(test) task: command={command}, start periodic robot task")
 
-        elif command == 2 or command == 3 or command == 4:  # command 4도 포함
+        elif command == 2 or command == 3:
             self.get_logger().info(f"Task: command={command}, table_id={table_id}, target={target}")
             
             robot_id = self.get_task_robot_id(target)
+            # 타입 확인을 위한 로그 추가
+            self.get_logger().info(f"Selected robot_id: {robot_id}, Type: {type(robot_id)}")
+            
             if robot_id:
+                # 문자열로 명시적 변환
+                robot_id = str(robot_id)
                 make_path(robot_id, command, table_id, target)
                 self.get_logger().info(f"Make Path: command={command}, target={target}, table_id={table_id}")
             else:
                 self.get_logger().warn("No available robot found for task!")
-        
+
+        elif command == 4:
+            robot_id = "pinky1"
+            make_path(robot_id, command, table_id, target)
+            self.get_logger().info(f"Make Path: command={command}, target={target}, table_id={table_id}")
         else:
 
             self.get_logger().info(f"Unknown command: {command}")
