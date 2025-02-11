@@ -26,14 +26,19 @@ class DynamicWaypointNavigator(Node):
         self.status_publisher = self.create_publisher(PointAndStatus, f'/{namespace}/status_publisher', 3)
         self.subscription = self.create_subscription(
             PoseStamped,  # /tracked_pose가 PoseStamped 형식이라고 가정
-            # f'/{namespace}/tracked_pose_transfer',
-            "/pinky1/tracked_pose_transfer",
-            # "/pinky2/tracked_pose",
+            "/pinky1/tracked_pose",
             self.tracked_pose_callback,
             3)
         self.timer = self.create_timer(1.0, self.publish_message)
         self.status = "Idle"
         self.target = None
+
+        # publisher 생성 추가
+        self.publisher = self.create_publisher(
+            PoseStamped,
+            f'/{namespace}/tracked_pose_transfer',
+            3
+        )
 
     def handle_task_request(self, request, response):
         # Log the received request data
@@ -130,9 +135,6 @@ class DynamicWaypointNavigator(Node):
         self.reception.pose = msg.pose      # 기존 위치 & 자세 유지
 
         # 변환된 데이터 퍼블리시
-        # self.publisher.publish(self.reception)
-        # self.get_logger().info(f'📡 Published Converted Pose: {self.reception.pose.position.x}, {self.reception.pose.position.y}, {self.reception.pose.position.z}')
-
         self.publisher.publish(self.reception)
 
         # 좌표 정보는 INFO 레벨로 로깅
