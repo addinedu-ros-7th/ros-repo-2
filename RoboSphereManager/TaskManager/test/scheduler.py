@@ -143,13 +143,22 @@ class Scheduler(Node):
         if not robot_states:
             return None
 
+        # target을 Point 객체로 변환
+        target_point = Point()
+        if isinstance(target, tuple):
+            target_point.x = float(target[0])
+            target_point.y = float(target[1])
+            target_point.z = 0.0
+        else:
+            target_point = target
+
         # Idle 상태인 로봇 중에서 가장 가까운 로봇을 찾음
         closest_robot = None
         min_distance = float('inf')
 
         for namespace, state in robot_states.items():
             if state['status'] == "Idle":  # Idle 상태인 로봇만 고려
-                distance = self.calculate_distance(state['position'], target)
+                distance = self.calculate_distance(state['position'], target_point)
                 if distance < min_distance:
                     min_distance = distance
                     closest_robot = namespace
@@ -169,6 +178,7 @@ class Scheduler(Node):
 
     def process_task(self, task):
         command, target, table_id = task
+
         """
         command
         1: 주기적 작업
@@ -176,19 +186,20 @@ class Scheduler(Node):
         3: 사용자 요청 수거 작업
         4: 서빙 작업
         """
-        if command :
+        
+        self.get_logger().info(f"Processing task: command={command}, target={target}, table_id={table_id}")
 
-            self.get_logger().info(f"Processing task: command={command}, target={target}, table_id={table_id}")
+        if command == 1:
+            self.get_logger().info(f"Periodic(test) task: command={command}, start periodic robot task")
+
+        elif command == 2 or command == 3 or command == 4:  # command 4도 포함
+            self.get_logger().info(f"Task: command={command}, table_id={table_id}, target={target}")
+            
             robot_id = self.get_task_robot_id(target)
-            
             if robot_id:
-                
                 make_path(robot_id, command, table_id, target)
-                
                 self.get_logger().info(f"Make Path: command={command}, target={target}, table_id={table_id}")
-            
             else:
-
                 self.get_logger().warn("No available robot found for task!")
         
         else:
