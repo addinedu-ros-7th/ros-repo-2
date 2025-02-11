@@ -201,46 +201,52 @@ class DynamicWaypointNavigator(Node):
             f'Goal: ({msg.goal_position.x}, {msg.goal_position.y})'
         )
     
-    def generate_waypoints(self, target):
-        """각 웨이포인트의 theta 값을 다음 좌표를 향하도록 설정,
-        theta 값이 변하는 지점 + 마지막 웨이포인트만 선택하여 반환
-        좌표에 오프셋 (+0.005, +0.005) 적용"""
+        def generate_waypoints(self, target):
+            """각 웨이포인트의 theta 값을 다음 좌표를 향하도록 설정,
+            theta 값이 변하는 지점 + 마지막 웨이포인트만 선택하여 반환
+            모든 웨이포인트에 오프셋 (+0.05, +0.05) 적용"""
 
-        waypoints = []
-        last_theta = None  # 이전 theta 값 저장
+            waypoints = []
+            last_theta = None  # 이전 theta 값 저장
 
-        for i in range(len(target)):
-            if i < len(target) - 1:  # 다음 좌표를 향하도록 설정
-                theta = math.atan2(target[i+1][1] - target[i][1], target[i+1][0] - target[i][0])
-            else:  # 마지막 웨이포인트는 반대 방향
-                theta = math.atan2(target[i][1] - target[i-1][1], target[i][0] - target[i-1][0]) + math.pi
+            for i in range(len(target)):
+                if i < len(target) - 1:  # 다음 좌표를 향하도록 설정
+                    theta = math.atan2(target[i+1][1] - target[i][1], target[i+1][0] - target[i][0])
+                else:  # 마지막 웨이포인트는 반대 방향
+                    theta = math.atan2(target[i][1] - target[i-1][1], target[i][0] - target[i-1][0]) + math.pi
 
-            theta = round(theta, 2)  # 소수점 2자리로 반올림
+                theta = round(theta, 2)  # 소수점 2자리로 반올림
 
-            #  첫 번째 웨이포인트는 항상 추가
-            if last_theta is None or abs(theta - last_theta) > 0.1:
-                waypoints.append({
-                    "x": round(float(target[i][0]) + 0.05, 3),  #  오프셋 적용
-                    "y": round(float(target[i][1]) + 0.05, 3),  #  오프셋 적용
-                    "theta": theta
-                })
-                last_theta = theta  # 마지막 theta 갱신
+                #  모든 웨이포인트에 오프셋 적용
+                new_x = round(float(target[i][0]) + 0.1, 3)
+                new_y = round(float(target[i][1]) - 0.1, 3)
 
-        # 마지막 웨이포인트가 리스트에 포함되지 않았다면 추가 (오프셋 포함)
-        if waypoints[-1]["x"] != round(float(target[-1][0]) + 0.005, 3) or waypoints[-1]["y"] != round(float(target[-1][1]) + 0.005, 3):
+                #  첫 번째 웨이포인트는 항상 추가, 이후 theta 차이가 0.1 이상일 경우 추가
+                if last_theta is None or abs(theta - last_theta) > 0.1:
+                    waypoints.append({
+                        "x": new_x,  
+                        "y": new_y,  
+                        "theta": theta
+                    })
+                    last_theta = theta  # 마지막 theta 갱신
+
+            # 마지막 웨이포인트가 리스트에 포함되지 않았다면 추가 (오프셋 포함)
+            final_x = round(float(target[-1][0]) + 0.1, 3)
+            final_y = round(float(target[-1][1]) - 0.1, 3)
             final_theta = math.atan2(target[-1][1] - target[-2][1], target[-1][0] - target[-2][0]) + math.pi
-            waypoints.append({
-                "x": round(float(target[-1][0]) + 0.05, 3),  #  오프셋 적용
-                "y": round(float(target[-1][1]) + 0.05, 3),  #  오프셋 적용
-                "theta": round(final_theta, 2)
-            })
 
-        # 로그 출력 (디버깅)
-        for wp in waypoints:
-            self.get_logger().info(f"Filtered waypoints: {wp}")
+            if waypoints[-1]["x"] != final_x or waypoints[-1]["y"] != final_y:
+                waypoints.append({
+                    "x": final_x,  
+                    "y": final_y,  
+                    "theta": round(final_theta, 2)
+                })
 
-        return waypoints
+            # 로그 출력 (디버깅)
+            for wp in waypoints:
+                self.get_logger().info(f"Filtered waypoints: {wp}")
 
+            return waypoints
 
     def ping_pong_callback(self, msg):
         """탁구공 감지 및 안정적인 좌표 확인 후 웨이포인트 추가"""
