@@ -11,9 +11,7 @@ from interface_package.msg import PointAndStatus
 from geometry_msgs.msg import Point  # 좌표를 다루기 위해 필요
 
 task_queue = PriorityQueue()
-
-# 전역 변수로 모든 로봇의 위치를 저장
-robot_positions = {}
+robot_states = {}  # 로봇의 상태와 위치를 저장하는 전역 딕셔너리
 
 def receive_tcp_signal():
     try:
@@ -54,10 +52,6 @@ def process_signal(signal):
     for item in list(task_queue.queue):
         print(item)
 
-# # start receiving tcp signal
-# tcp_thread = threading.Thread(target=receive_tcp_signal)
-# tcp_thread.start()
-
 class PathPlannerClient(Node):
 
     def __init__(self):
@@ -93,44 +87,32 @@ def make_path(robot_id, command, table_id, target):
     # 노드 정리
     path_planner_client.destroy_node()
 
-class RobotPoseSubscriber(Node):
-
+class RobotStatusSubscriber(Node):
     def __init__(self, namespace):
-        super().__init__('robot_pose_subscriber')
+        super().__init__('robot_status_subscriber')
         self.namespace = namespace
+        # PointAndStatus 메시지 타입으로 변경
         self.subscription = self.create_subscription(
-            PoseStamped,
-            f'/{self.namespace}/tracked_pose',
+            PointAndStatus,
+            f'/{self.namespace}/status_publisher',
             self.listener_callback,
             3)
-        self.subscription  # prevent unused variable warning
-        self.current_pose = None
-
+        self.subscription
+        self.current_status = None
+        self.current_position = None
+        
     def listener_callback(self, msg):
-        self.current_pose = msg.pose
-        robot_positions[self.namespace] = self.current_pose
-        self.get_logger().info(f'[{self.namespace}] Current Pose: {self.current_pose}')
-
-    def get_task_robot_id(self, target):
-        if self.current_pose is None:
-            return None
-
-        # 모든 로봇의 위치를 비교하여 가장 가까운 로봇을 찾음
-        closest_robot = None
-        min_distance = float('inf')
-
-        for namespace, pose in robot_positions.items():
-            distance = self.calculate_distance(pose, target)
-            if distance < min_distance:
-                min_distance = distance
-                closest_robot = namespace
-
-        return closest_robot
-
-    def calculate_distance(self, pose, target):
-        # Calculate Euclidean distance between two points
-        return ((pose.position.x - target.x) ** 2 + 
-                (pose.position.y - target.y) ** 2) ** 0.5
+        self.current_status = msg.status
+        self.current_position = msg.current_position
+        # 전역 딕셔너리에 상태와 위치 저장
+        robot_states[self.namespace] = {
+            'status': self.current_status,
+            'position': self.current_position
+        }
+        self.get_logger().info(
+            f'[{self.namespace}] Status: {self.current_status}, '
+            f'Position: {self.current_position}'
+        )
 
 class Scheduler(Node):
 
@@ -143,7 +125,7 @@ class Scheduler(Node):
             'pinky2': pinky2_subscriber
         }
 
-        # 주기적 작업 추가 (이 부분이 빠졌을 가능성이 높음)
+        # 주기적 작업 추가
         self.timer = self.create_timer(300.0, self.add_periodic_task)
 
         # Task 실행 쓰레드 시작
@@ -156,19 +138,28 @@ class Scheduler(Node):
         task_queue.put(task)
         self.get_logger().info(f"Periodic task added to queue: {task}")
 
+    # 목적지에 맞는 로봇의 ID를 반환, 남은 로봇이 없을 시 None 반환
     def get_task_robot_id(self, target):
-        # 모든 로봇 중 가장 가까운 로봇 찾기
+        if not robot_states:
+            return None
+
+        # Idle 상태인 로봇 중에서 가장 가까운 로봇을 찾음
         closest_robot = None
         min_distance = float('inf')
 
-        for namespace, subscriber in self.robot_subscribers.items():
-            if subscriber.current_pose is not None:
-                distance = subscriber.calculate_distance(subscriber.current_pose, target)
+        for namespace, state in robot_states.items():
+            if state['status'] == "Idle":  # Idle 상태인 로봇만 고려
+                distance = self.calculate_distance(state['position'], target)
                 if distance < min_distance:
                     min_distance = distance
                     closest_robot = namespace
 
         return closest_robot
+
+    def calculate_distance(self, position, target):
+        # Calculate Euclidean distance between two points
+        return ((position.x - target.x) ** 2 + 
+                (position.y - target.y) ** 2) ** 0.5
 
     def execute_tasks(self):
         while rclpy.ok():
@@ -178,31 +169,31 @@ class Scheduler(Node):
 
     def process_task(self, task):
         command, target, table_id = task
+        """
+        command
+        1: 주기적 작업
+        2: 종료 후 수거 작업
+        3: 사용자 요청 수거 작업
+        4: 서빙 작업
+        """
+        if command :
 
-        if command == 1:
-            self.get_logger().info(f"Periodic(test) task: command={command}, start periodic robot task")
+            self.get_logger().info(f"Processing task: command={command}, target={target}, table_id={table_id}")
+            robot_id = self.get_task_robot_id(target)
+            
+            if robot_id:
+                
+                make_path(robot_id, command, table_id, target)
+                
+                self.get_logger().info(f"Make Path: command={command}, target={target}, table_id={table_id}")
+            
+            else:
 
-        elif command == 2 or command == 3:
-            self.get_logger().info(f"Table all task: command={command}, table_id={table_id}, target={target}")
-
-            robot_id = "pinky1"
-            make_path(robot_id, command, table_id, target)
-            # 가장 가까운 로봇 ID 가져오기
-            # robot_id = self.get_task_robot_id(target)
-            # if robot_id:
-            #     make_path(robot_id, command, table_id, target)
-            #     # self.get_logger().info(f"Make Path: command={command}, target={target}, table_id={table_id}")
-            # else:
-            #     self.get_logger().warn("No available robot found for task!")
-
-        elif command == 4:
-            robot_id = "pinky1"
-            make_path(robot_id, command, table_id, target)
-
+                self.get_logger().warn("No available robot found for task!")
+        
         else:
-            self.get_logger().info(f"Unknown command: {command}")
 
-        self.get_logger().info(f"Processing task: command={command}, target={target}, table_id={table_id}")
+            self.get_logger().info(f"Unknown command: {command}")
 
 def main(args=None):
     rclpy.init(args=args)
@@ -212,8 +203,8 @@ def main(args=None):
     tcp_thread.start()
 
     # Create subscribers for each robot
-    pinky1_subscriber = RobotPoseSubscriber('pinky1')
-    pinky2_subscriber = RobotPoseSubscriber('pinky2')
+    pinky1_subscriber = RobotStatusSubscriber('pinky1')
+    pinky2_subscriber = RobotStatusSubscriber('pinky2')
 
     # Create scheduler (구독자를 전달)
     scheduler = Scheduler(pinky1_subscriber, pinky2_subscriber)
