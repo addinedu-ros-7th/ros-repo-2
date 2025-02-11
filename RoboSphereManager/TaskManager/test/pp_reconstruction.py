@@ -27,8 +27,8 @@ class DynamicWaypointNavigator(Node):
         self.subscription = self.create_subscription(
             PoseStamped,  # /tracked_pose가 PoseStamped 형식이라고 가정
             # f'/{namespace}/tracked_pose_transfer',
-            # "/pinky1/tracked_pose_transfer",
-            "/pinky2/tracked_pose",
+            "/pinky1/tracked_pose_transfer",
+            # "/pinky2/tracked_pose",
             self.tracked_pose_callback,
             3)
         self.timer = self.create_timer(1.0, self.publish_message)
@@ -240,6 +240,7 @@ class DynamicWaypointNavigator(Node):
             self.get_logger().info(f"Filtered waypoints: {wp}")
 
         return waypoints
+
 
     def ping_pong_callback(self, msg):
         """탁구공 감지 및 안정적인 좌표 확인 후 웨이포인트 추가"""
