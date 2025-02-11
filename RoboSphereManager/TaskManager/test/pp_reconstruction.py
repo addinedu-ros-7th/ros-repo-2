@@ -59,13 +59,7 @@ class DynamicWaypointNavigator(Node):
                 # "table_id"와 "target"을 실제 리스트로 변환
                 table_id = json.loads(parsed_data["table_id"])  # "[1, 2, 4]" 형식에서 실제 리스트로 변환
                 target_list = json.loads(parsed_data["target"])      # "[[...], [...]]" 형식에서 실제 2D 리스트로 변환
-
-                print(type(table_id), type(target_list))
-                print()
             else :
-                print()
-                # print(f"command : {command}")
-                print()
                 table_id = int(parsed_data.get("table_id", -1))
                 target_list = parsed_data.get("target", [[0, 0]])  # 기본값으로 2D 리스트 설정
 
@@ -183,10 +177,11 @@ class DynamicWaypointNavigator(Node):
                 theta = math.atan2(target[i][1] - target[i-1][1], target[i][0] - target[i-1][0]) + math.pi
 
             waypoints.append({
-                "x": float(target[i][0]),
-                "y": float(target[i][1]),
+                "x": round(float(target[i][0]) + 0.005, 3),
+                "y": round(float(target[i][1]) + 0.005, 3),
                 "theta": round(theta, 2)
             })
+            self.get_logger().info(f"waypoints : {float(target[i][0]), float(target[i][1]), round(theta, 2)} |")
         
         return waypoints
 
