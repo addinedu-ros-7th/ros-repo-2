@@ -177,8 +177,8 @@ class DynamicWaypointNavigator(Node):
                 theta = math.atan2(target[i][1] - target[i-1][1], target[i][0] - target[i-1][0]) + math.pi
 
             waypoints.append({
-                "x": round(float(target[i][0]) + 0.005, 3),
-                "y": round(float(target[i][1]) + 0.005, 3),
+                "x": round(float(target[i][0]) + 0.01, 3),
+                "y": round(float(target[i][1]) + 0.01, 3),
                 "theta": round(theta, 2)
             })
             self.get_logger().info(f"waypoints : {float(target[i][0]), float(target[i][1]), round(theta, 2)} |")
