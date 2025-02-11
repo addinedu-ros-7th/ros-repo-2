@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>752</width>
-    <height>858</height>
+    <width>750</width>
+    <height>950</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,16 +17,23 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>210</x>
-      <y>50</y>
-      <width>311</width>
+      <x>160</x>
+      <y>60</y>
+      <width>461</width>
       <height>61</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>30</pointsize>
+      <family>Ubuntu Sans</family>
+      <pointsize>45</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
      </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">font: 45pt &quot;Ubuntu Sans&quot;;</string>
     </property>
     <property name="text">
      <string>애드인에듀 탁구장</string>
@@ -36,36 +43,42 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>110</y>
+      <y>140</y>
       <width>751</width>
-      <height>731</height>
+      <height>701</height>
      </rect>
     </property>
     <property name="currentIndex">
      <number>0</number>
     </property>
     <widget class="QWidget" name="page">
-     <widget class="QPushButton" name="pushButton">
+     <widget class="QPushButton" name="realtime_table_btn">
       <property name="geometry">
        <rect>
-        <x>240</x>
-        <y>180</y>
-        <width>261</width>
-        <height>81</height>
+        <x>190</x>
+        <y>150</y>
+        <width>381</width>
+        <height>151</height>
        </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 20pt &quot;Ubuntu Sans&quot;;</string>
       </property>
       <property name="text">
        <string>실시간 테이블</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_2">
+     <widget class="QPushButton" name="reserve_btn">
       <property name="geometry">
        <rect>
-        <x>240</x>
-        <y>330</y>
-        <width>261</width>
-        <height>81</height>
+        <x>190</x>
+        <y>400</y>
+        <width>381</width>
+        <height>161</height>
        </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 20pt &quot;Ubuntu Sans&quot;;</string>
       </property>
       <property name="text">
        <string>예약하기</string>
@@ -137,14 +150,17 @@
        <string> 테이블 4</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_10">
+     <widget class="QPushButton" name="prev_btn">
       <property name="geometry">
        <rect>
         <x>310</x>
-        <y>660</y>
+        <y>640</y>
         <width>131</width>
         <height>51</height>
        </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 16pt &quot;Ubuntu Sans&quot;;</string>
       </property>
       <property name="text">
        <string>&lt; 이전</string>
@@ -163,7 +179,7 @@
        <string/>
       </property>
       <property name="pixmap">
-       <pixmap>../Downloads/Group 53.png</pixmap>
+       <pixmap>map.png</pixmap>
       </property>
       <property name="scaledContents">
        <bool>true</bool>
@@ -174,30 +190,36 @@
      <zorder>label_9</zorder>
      <zorder>label_8</zorder>
      <zorder>label_11</zorder>
-     <zorder>pushButton_10</zorder>
+     <zorder>prev_btn</zorder>
     </widget>
     <widget class="QWidget" name="page_3">
-     <widget class="QLineEdit" name="lineEdit_2">
+     <widget class="QLineEdit" name="password_input">
       <property name="geometry">
        <rect>
         <x>170</x>
-        <y>350</y>
+        <y>430</y>
         <width>421</width>
         <height>41</height>
        </rect>
       </property>
       <property name="text">
-       <string>비밀번호(숫자 4자리)</string>
+       <string/>
+      </property>
+      <property name="echoMode">
+       <enum>QLineEdit::Password</enum>
       </property>
      </widget>
      <widget class="QLabel" name="label_4">
       <property name="geometry">
        <rect>
         <x>170</x>
-        <y>310</y>
-        <width>67</width>
-        <height>17</height>
+        <y>376</y>
+        <width>111</width>
+        <height>31</height>
        </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font:16pt &quot;Ubuntu Sans&quot;;</string>
       </property>
       <property name="text">
        <string>비밀번호</string>
@@ -207,10 +229,13 @@
       <property name="geometry">
        <rect>
         <x>360</x>
-        <y>50</y>
-        <width>67</width>
-        <height>17</height>
+        <y>60</y>
+        <width>81</width>
+        <height>41</height>
        </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 20pt &quot;Ubuntu Sans&quot;;</string>
       </property>
       <property name="text">
        <string>로그인</string>
@@ -220,49 +245,58 @@
       <property name="geometry">
        <rect>
         <x>170</x>
-        <y>170</y>
-        <width>331</width>
-        <height>17</height>
+        <y>160</y>
+        <width>431</width>
+        <height>41</height>
        </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 16pt &quot;Ubuntu Sans&quot;;</string>
       </property>
       <property name="text">
        <string>가입한 휴대전화 번호를 입력해주세요</string>
       </property>
      </widget>
-     <widget class="QLineEdit" name="lineEdit">
+     <widget class="QLineEdit" name="phone_input">
       <property name="geometry">
        <rect>
         <x>170</x>
-        <y>220</y>
+        <y>240</y>
         <width>421</width>
         <height>41</height>
        </rect>
       </property>
       <property name="text">
-       <string>휴대전화 번호(숫자만 입력)</string>
+       <string/>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_5">
+     <widget class="QPushButton" name="confirm_btn">
       <property name="geometry">
        <rect>
-        <x>390</x>
-        <y>550</y>
+        <x>420</x>
+        <y>570</y>
         <width>141</width>
         <height>51</height>
        </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 14pt &quot;Ubuntu Sans&quot;;</string>
       </property>
       <property name="text">
        <string>확인</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_6">
+     <widget class="QPushButton" name="prev_btn_2">
       <property name="geometry">
        <rect>
-        <x>240</x>
-        <y>550</y>
+        <x>200</x>
+        <y>570</y>
         <width>131</width>
         <height>51</height>
        </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 14pt &quot;Ubuntu Sans&quot;;</string>
       </property>
       <property name="text">
        <string>&lt; 이전</string>
@@ -283,7 +317,7 @@
        <string/>
       </property>
       <property name="pixmap">
-       <pixmap>../Downloads/탁구장2/Ellipse 56.png</pixmap>
+       <pixmap>Ellipse Purple.png</pixmap>
       </property>
       <property name="scaledContents">
        <bool>true</bool>
@@ -298,6 +332,9 @@
         <height>19</height>
        </rect>
       </property>
+      <property name="styleSheet">
+       <string notr="true">font: 12pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
       <property name="text">
        <string>청소중</string>
       </property>
@@ -311,6 +348,9 @@
         <height>81</height>
        </rect>
       </property>
+      <property name="styleSheet">
+       <string notr="true">font: 16pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
       <property name="text">
        <string>테이블 2</string>
       </property>
@@ -323,6 +363,9 @@
         <width>66</width>
         <height>19</height>
        </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 12pt &quot;Ubuntu Sans&quot;;</string>
       </property>
       <property name="text">
        <string>사용중</string>
@@ -341,7 +384,7 @@
        <string/>
       </property>
       <property name="pixmap">
-       <pixmap>../Downloads/탁구장2/Ellipse 58.png</pixmap>
+       <pixmap>Ellipse Orange.png</pixmap>
       </property>
       <property name="scaledContents">
        <bool>true</bool>
@@ -350,14 +393,17 @@
      <widget class="QLabel" name="label_14">
       <property name="geometry">
        <rect>
-        <x>100</x>
+        <x>110</x>
         <y>247</y>
-        <width>191</width>
+        <width>251</width>
         <height>41</height>
        </rect>
       </property>
+      <property name="styleSheet">
+       <string notr="true">font: 16pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
       <property name="text">
-       <string>탁구 테이블을 선택해 주세요</string>
+       <string>탁구 테이블을 선택해 주세요.</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_16">
@@ -368,6 +414,9 @@
         <width>66</width>
         <height>19</height>
        </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 12pt &quot;Ubuntu Sans&quot;;</string>
       </property>
       <property name="text">
        <string>비어 있음</string>
@@ -382,6 +431,9 @@
         <height>81</height>
        </rect>
       </property>
+      <property name="styleSheet">
+       <string notr="true">font: 16pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
       <property name="text">
        <string>30분</string>
       </property>
@@ -395,11 +447,14 @@
         <height>81</height>
        </rect>
       </property>
+      <property name="styleSheet">
+       <string notr="true">font: 16pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
       <property name="text">
        <string>테이블 4</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_18">
+     <widget class="QPushButton" name="confirm_btn_2">
       <property name="geometry">
        <rect>
         <x>400</x>
@@ -407,6 +462,9 @@
         <width>131</width>
         <height>51</height>
        </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 14pt &quot;Ubuntu Sans&quot;;</string>
       </property>
       <property name="text">
        <string>확인</string>
@@ -420,6 +478,9 @@
         <width>201</width>
         <height>81</height>
        </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 16pt &quot;Ubuntu Sans&quot;;</string>
       </property>
       <property name="text">
        <string>테이블 3</string>
@@ -435,7 +496,7 @@
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true"/>
+       <string notr="true">font: 16pt &quot;Ubuntu Sans&quot;;</string>
       </property>
       <property name="text">
        <string>테이블 1</string>
@@ -446,12 +507,15 @@
        <rect>
         <x>110</x>
         <y>47</y>
-        <width>181</width>
+        <width>241</width>
         <height>41</height>
        </rect>
       </property>
+      <property name="styleSheet">
+       <string notr="true">font: 16pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
       <property name="text">
-       <string>이용 시간을 선택해 주세요</string>
+       <string>이용 시간을 선택해 주세요.</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_17">
@@ -467,13 +531,13 @@
        <string/>
       </property>
       <property name="pixmap">
-       <pixmap>../Downloads/탁구장2/Ellipse 57.png</pixmap>
+       <pixmap>Ellipse Red.png</pixmap>
       </property>
       <property name="scaledContents">
        <bool>true</bool>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_13">
+     <widget class="QPushButton" name="prev_btn_3">
       <property name="geometry">
        <rect>
         <x>210</x>
@@ -481,6 +545,9 @@
         <width>131</width>
         <height>51</height>
        </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 14pt &quot;Ubuntu Sans&quot;;</string>
       </property>
       <property name="text">
        <string>&lt; 이전</string>
@@ -511,6 +578,9 @@
         <height>81</height>
        </rect>
       </property>
+      <property name="styleSheet">
+       <string notr="true">font: 16pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
       <property name="text">
        <string>1시간</string>
       </property>
@@ -525,12 +595,12 @@
      <zorder>label_16</zorder>
      <zorder>pushButton_11</zorder>
      <zorder>pushButton_17</zorder>
-     <zorder>pushButton_18</zorder>
+     <zorder>confirm_btn_2</zorder>
      <zorder>pushButton_16</zorder>
      <zorder>pushButton_14</zorder>
      <zorder>label_13</zorder>
      <zorder>label_17</zorder>
-     <zorder>pushButton_13</zorder>
+     <zorder>prev_btn_3</zorder>
      <zorder>pushButton_12</zorder>
     </widget>
     <widget class="QWidget" name="page_5">
@@ -538,10 +608,13 @@
       <property name="geometry">
        <rect>
         <x>460</x>
-        <y>440</y>
-        <width>111</width>
+        <y>470</y>
+        <width>121</width>
         <height>31</height>
        </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 16pt &quot;Ubuntu Sans&quot;;</string>
       </property>
       <property name="text">
        <string/>
@@ -551,16 +624,19 @@
       <property name="geometry">
        <rect>
         <x>360</x>
-        <y>100</y>
-        <width>66</width>
-        <height>19</height>
+        <y>88</y>
+        <width>81</width>
+        <height>31</height>
        </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 16pt &quot;Ubuntu Sans&quot;;</string>
       </property>
       <property name="text">
        <string>주문내역</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_20">
+     <widget class="QPushButton" name="payment_btn">
       <property name="geometry">
        <rect>
         <x>430</x>
@@ -569,6 +645,9 @@
         <height>51</height>
        </rect>
       </property>
+      <property name="styleSheet">
+       <string notr="true">font: 14pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
       <property name="text">
        <string>결제</string>
       </property>
@@ -576,17 +655,20 @@
      <widget class="QLabel" name="label_26">
       <property name="geometry">
        <rect>
-        <x>170</x>
-        <y>440</y>
-        <width>66</width>
-        <height>19</height>
+        <x>165</x>
+        <y>470</y>
+        <width>71</width>
+        <height>31</height>
        </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 16pt &quot;Ubuntu Sans&quot;;</string>
       </property>
       <property name="text">
        <string>총 금액</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_19">
+     <widget class="QPushButton" name="prev_btn_4">
       <property name="geometry">
        <rect>
         <x>240</x>
@@ -594,6 +676,9 @@
         <width>131</width>
         <height>51</height>
        </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 14pt &quot;Ubuntu Sans&quot;;</string>
       </property>
       <property name="text">
        <string>&lt; 이전</string>
@@ -618,37 +703,46 @@
      <widget class="QLabel" name="label_23">
       <property name="geometry">
        <rect>
-        <x>170</x>
-        <y>180</y>
-        <width>101</width>
-        <height>21</height>
+        <x>150</x>
+        <y>170</y>
+        <width>131</width>
+        <height>31</height>
        </rect>
       </property>
+      <property name="styleSheet">
+       <string notr="true">font: 16pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
       <property name="text">
-       <string>선택한 테이블</string>
+       <string>선택한 테이블:</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_24">
       <property name="geometry">
        <rect>
-        <x>440</x>
-        <y>180</y>
-        <width>66</width>
-        <height>19</height>
+        <x>425</x>
+        <y>168</y>
+        <width>91</width>
+        <height>31</height>
        </rect>
       </property>
+      <property name="styleSheet">
+       <string notr="true">font: 16pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
       <property name="text">
-       <string>이용시간</string>
+       <string>이용시간:</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_selected_time">
       <property name="geometry">
        <rect>
-        <x>515</x>
-        <y>180</y>
-        <width>91</width>
-        <height>20</height>
+        <x>530</x>
+        <y>169</y>
+        <width>101</width>
+        <height>31</height>
        </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 16pt &quot;Ubuntu Sans&quot;;</string>
       </property>
       <property name="text">
        <string/>
@@ -658,10 +752,13 @@
       <property name="geometry">
        <rect>
         <x>290</x>
-        <y>180</y>
-        <width>91</width>
-        <height>19</height>
+        <y>170</y>
+        <width>111</width>
+        <height>31</height>
        </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 16pt &quot;Ubuntu Sans&quot;;</string>
       </property>
       <property name="text">
        <string/>
@@ -671,14 +768,15 @@
       <property name="geometry">
        <rect>
         <x>110</x>
-        <y>390</y>
+        <y>360</y>
         <width>551</width>
-        <height>20</height>
+        <height>31</height>
        </rect>
       </property>
       <property name="styleSheet">
        <string notr="true">background-color: rgb(61, 56, 70);
-color: rgb(246, 245, 244);</string>
+color: rgb(246, 245, 244);
+font: 16pt &quot;Ubuntu Sans&quot;;</string>
       </property>
       <property name="text">
        <string>결제 내역</string>
@@ -690,9 +788,9 @@ color: rgb(246, 245, 244);</string>
      <zorder>label_22</zorder>
      <zorder>label_price</zorder>
      <zorder>label_21</zorder>
-     <zorder>pushButton_20</zorder>
+     <zorder>payment_btn</zorder>
      <zorder>label_26</zorder>
-     <zorder>pushButton_19</zorder>
+     <zorder>prev_btn_4</zorder>
      <zorder>label_23</zorder>
      <zorder>label_24</zorder>
      <zorder>label_selected_time</zorder>
@@ -711,6 +809,9 @@ color: rgb(246, 245, 244);</string>
       </property>
       <property name="styleSheet">
        <string notr="true">background-color: rgb(249, 240, 107);</string>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
       </property>
       <property name="html">
        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -733,18 +834,548 @@ p, li { white-space: pre-wrap; }
       </property>
      </widget>
     </widget>
+    <widget class="QWidget" name="page_7">
+     <widget class="QLabel" name="label_5">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>10</y>
+        <width>641</width>
+        <height>711</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(255, 255, 255);</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="cider_btn">
+      <property name="geometry">
+       <rect>
+        <x>70</x>
+        <y>70</y>
+        <width>141</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 14pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
+      <property name="text">
+       <string>사이다
+1,000원</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="cola_btn">
+      <property name="geometry">
+       <rect>
+        <x>220</x>
+        <y>70</y>
+        <width>141</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Ubuntu Sans</family>
+        <pointsize>14</pointsize>
+        <weight>50</weight>
+        <italic>false</italic>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 14pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
+      <property name="text">
+       <string>콜라
+1,000원</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="choco_btn">
+      <property name="geometry">
+       <rect>
+        <x>70</x>
+        <y>150</y>
+        <width>141</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 14pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
+      <property name="text">
+       <string>초코파이
+500원</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="energy_btn">
+      <property name="geometry">
+       <rect>
+        <x>220</x>
+        <y>150</y>
+        <width>141</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 14pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
+      <property name="text">
+       <string>에너지바
+1,000원</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_7">
+      <property name="geometry">
+       <rect>
+        <x>760</x>
+        <y>570</y>
+        <width>141</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>에너지바
+500원</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_6">
+      <property name="geometry">
+       <rect>
+        <x>70</x>
+        <y>20</y>
+        <width>191</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 16pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
+      <property name="text">
+       <string>상품을 선택해 주세요</string>
+      </property>
+     </widget>
+     <widget class="QTableWidget" name="tableWidget">
+      <property name="geometry">
+       <rect>
+        <x>70</x>
+        <y>240</y>
+        <width>591</width>
+        <height>341</height>
+       </rect>
+      </property>
+      <column>
+       <property name="text">
+        <string>상품명</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>수량</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>감소</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>추가</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>삭제</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>금액</string>
+       </property>
+      </column>
+     </widget>
+     <widget class="QLabel" name="label_total">
+      <property name="geometry">
+       <rect>
+        <x>530</x>
+        <y>590</y>
+        <width>101</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 16pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="order_payment_btn">
+      <property name="geometry">
+       <rect>
+        <x>310</x>
+        <y>640</y>
+        <width>131</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 14pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
+      <property name="text">
+       <string>결제하기</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="fanta_btn">
+      <property name="geometry">
+       <rect>
+        <x>370</x>
+        <y>70</y>
+        <width>141</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 14pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
+      <property name="text">
+       <string>환타
+1,000원</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="coffee_btn">
+      <property name="geometry">
+       <rect>
+        <x>520</x>
+        <y>70</y>
+        <width>141</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 14pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
+      <property name="text">
+       <string>커피
+1,000원</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="protein_btn">
+      <property name="geometry">
+       <rect>
+        <x>370</x>
+        <y>149</y>
+        <width>141</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 14pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
+      <property name="text">
+       <string>단백질바
+1,000원</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="darkchoco_btn">
+      <property name="geometry">
+       <rect>
+        <x>520</x>
+        <y>150</y>
+        <width>141</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 14pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
+      <property name="text">
+       <string>다크초콜릿
+1,000원</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_27">
+      <property name="geometry">
+       <rect>
+        <x>440</x>
+        <y>590</y>
+        <width>91</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 16pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
+      <property name="text">
+       <string>총 금액:</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="page_8">
+     <widget class="QTextEdit" name="textEdit_5">
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>160</y>
+        <width>331</width>
+        <height>371</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(249, 240, 107);</string>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+      <property name="html">
+       <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu Sans'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu';&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu'; font-size:22pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu'; font-size:22pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Ubuntu'; font-size:22pt;&quot;&gt;결제 완료&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu';&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu';&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu';&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu';&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu';&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;로봇이 배송해 드릴게요&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="page_9">
+     <widget class="QPushButton" name="clean_all_btn">
+      <property name="geometry">
+       <rect>
+        <x>220</x>
+        <y>170</y>
+        <width>341</width>
+        <height>151</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 20pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
+      <property name="text">
+       <string>전체 청소</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="clean_partial_btn">
+      <property name="geometry">
+       <rect>
+        <x>220</x>
+        <y>410</y>
+        <width>341</width>
+        <height>151</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 20pt &quot;Ubuntu Sans&quot;;</string>
+      </property>
+      <property name="text">
+       <string>부분 청소</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="page_10">
+     <widget class="QPushButton" name="stop_all_btn">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>550</y>
+        <width>261</width>
+        <height>101</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 20pt &quot;Ubuntu Sans&quot;;
+background-color: rgb(224, 27, 36);</string>
+      </property>
+      <property name="text">
+       <string>종료</string>
+      </property>
+     </widget>
+     <widget class="QTextEdit" name="textEdit_6">
+      <property name="geometry">
+       <rect>
+        <x>190</x>
+        <y>60</y>
+        <width>371</width>
+        <height>441</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(249, 240, 107);</string>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+      <property name="html">
+       <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu Sans'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu';&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu'; font-size:22pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu'; font-size:22pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Ubuntu'; font-size:22pt;&quot;&gt;전체 청소중&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu';&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu';&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu';&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu';&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu';&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:20pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:20pt; color:#e01b24;&quot;&gt;종료&lt;/span&gt;&lt;span style=&quot; font-size:20pt;&quot;&gt;하실려면 &lt;/span&gt;&lt;span style=&quot; font-size:20pt; color:#e01b24;&quot;&gt;종료 버튼&lt;/span&gt;&lt;span style=&quot; font-size:20pt;&quot;&gt;을 눌러주세요.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="page_11">
+     <widget class="QPushButton" name="stop_partial_btn">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>550</y>
+        <width>261</width>
+        <height>101</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 20pt &quot;Ubuntu Sans&quot;;
+background-color: rgb(224, 27, 36);</string>
+      </property>
+      <property name="text">
+       <string>종료</string>
+      </property>
+     </widget>
+     <widget class="QTextEdit" name="textEdit_7">
+      <property name="geometry">
+       <rect>
+        <x>190</x>
+        <y>60</y>
+        <width>371</width>
+        <height>441</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(249, 240, 107);</string>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+      <property name="html">
+       <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu Sans'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu';&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu'; font-size:22pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu'; font-size:22pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Ubuntu'; font-size:22pt;&quot;&gt;부분 청소중&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu';&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu';&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu';&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu';&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu';&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu';&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Ubuntu';&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:20pt; color:#e01b24;&quot;&gt;종료&lt;/span&gt;&lt;span style=&quot; font-size:20pt;&quot;&gt;하실려면 &lt;/span&gt;&lt;span style=&quot; font-size:20pt; color:#e01b24;&quot;&gt;종료 버튼&lt;/span&gt;&lt;span style=&quot; font-size:20pt;&quot;&gt;을 눌러주세요.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+    </widget>
    </widget>
-   <widget class="QPushButton" name="pushButton_3">
+   <widget class="QPushButton" name="reset_btn">
     <property name="geometry">
      <rect>
-      <x>640</x>
-      <y>60</y>
-      <width>91</width>
-      <height>41</height>
+      <x>60</x>
+      <y>860</y>
+      <width>141</width>
+      <height>61</height>
      </rect>
     </property>
+    <property name="styleSheet">
+     <string notr="true">font: 14pt &quot;Ubuntu Sans&quot;;</string>
+    </property>
     <property name="text">
-     <string>초기화</string>
+     <string>홈</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="snack_order_btn">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>230</x>
+      <y>860</y>
+      <width>131</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">font: 14pt &quot;Ubuntu Sans&quot;;</string>
+    </property>
+    <property name="text">
+     <string>	음료 \ 간식
+ 주문하기</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="clean_service_btn">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>390</x>
+      <y>860</y>
+      <width>131</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Ubuntu Sans</family>
+      <pointsize>14</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">font: 14pt &quot;Ubuntu Sans&quot;;</string>
+    </property>
+    <property name="text">
+     <string>청소 서비스</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="logout_btn">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>860</y>
+      <width>131</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">font: 14pt &quot;Ubuntu Sans&quot;;</string>
+    </property>
+    <property name="text">
+     <string>로그아웃</string>
     </property>
    </widget>
   </widget>

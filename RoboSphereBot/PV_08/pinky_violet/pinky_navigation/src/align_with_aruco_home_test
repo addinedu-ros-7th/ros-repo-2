@@ -1,0 +1,147 @@
+#!/usr/bin/env python3
+import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import Pose, Twist
+import time
+
+
+class ArucoMarkerFollower(Node):
+    def __init__(self):
+        super().__init__('aruco_marker_follower')
+
+        # 목표 거리 및 정렬 오차
+        self.target_distance = 2.2  # 3m
+        self.alignment_tolerance = 0.1  # 정렬 오차 (1cm)
+        self.angular_tolerance = 0.05  # 각도 오차 (약 3도)
+
+        # 최근 Pose 메시지 저장 및 타이머
+        self.latest_pose_msg = None
+        self.last_pose_time = self.get_clock().now()
+
+        # 동작 상태
+        self.state = "STOPPED"  # "MOVING" 또는 "STOPPED"
+
+        # /aruco_pose 구독
+        self.subscription = self.create_subscription(
+            Pose,
+            '/aruco_pose',
+            self.pose_callback,
+            10
+        )
+
+        # 로봇 속도 퍼블리셔
+        self.velocity_publisher = self.create_publisher(Twist, '/cmd_vel', 10)
+
+        # 타이머 기반 제어 루프 (3초 간격으로 실행)
+        self.timer = self.create_timer(3.0, self.control_loop)
+
+        self.get_logger().info("Aruco Marker Follower Node has started!")
+
+    def pose_callback(self, msg):
+        """최근 Pose 메시지를 저장"""
+        self.latest_pose_msg = msg
+        self.last_pose_time = self.get_clock().now()
+
+    def control_loop(self):
+        """타이머 기반 제어 루프"""
+        # ArUco 마커를 일정 시간 동안 감지하지 못한 경우 정지
+        time_since_last_pose = (self.get_clock().now() - self.last_pose_time).nanoseconds / 1e9
+        if time_since_last_pose > 5.0:  # 5초 동안 업데이트가 없으면
+            self.get_logger().warning("No Pose data received for 5 seconds. Stopping robot.")
+            self.stop_robot()
+            self.state = "STOPPED"
+            return
+
+        if self.latest_pose_msg is None:
+            self.get_logger().info("No Pose data received yet.")
+            return  # Pose 데이터가 없으면 대기
+
+        # 현재 상태 확인
+        if self.state == "STOPPED":
+            self.get_logger().info("State: STOPPED -> MOVING")
+            self.move_towards_marker()
+            self.state = "MOVING"
+        elif self.state == "MOVING":
+            self.get_logger().info("State: MOVING -> STOPPED")
+            self.stop_robot()
+            self.state = "STOPPED"
+
+    def move_towards_marker(self):
+        """ArUco 마커를 향해 짧게 이동"""
+        current_position = [
+            self.latest_pose_msg.position.x,
+            self.latest_pose_msg.position.y,
+            self.latest_pose_msg.position.z
+        ]
+
+        # 제어 명령 초기화
+        cmd_vel = Twist()
+
+        # (1) Z 축 제어: 전진/후진
+        distance_error = current_position[2] - self.target_distance
+        if abs(distance_error) > self.alignment_tolerance:
+            linear_speed = 0.3 * distance_error
+            if abs(linear_speed) < 0.15:  # 최소 속도 보장
+                linear_speed = 0.15 if linear_speed > 0 else -0.15  # 방향 유지
+            cmd_vel.linear.x = max(min(linear_speed, 0.3), -0.3)
+        else:
+            cmd_vel.linear.x = 0.0  # 목표 거리에서 정지
+
+        # (2) X 축 제어: 좌우 회전
+        lateral_error = current_position[0]
+        if abs(lateral_error) > self.alignment_tolerance:
+            angular_speed = 0.3 * -lateral_error  # 부호를 반대로 설정하지 않음
+            if abs(angular_speed) < 0.15:  # 최소 속도 보장
+                angular_speed = 0.15 if angular_speed > 0 else -0.15  # 방향 유지
+            cmd_vel.angular.z = max(min(angular_speed, 0.3), -0.3)
+        else:
+            cmd_vel.angular.z = 0.0  # 정렬 완료
+
+        # 정렬 및 거리 도달 완료 확인
+        if cmd_vel.linear.x == 0.0 and cmd_vel.angular.z == 0.0:
+            self.get_logger().info("Alignment complete. Stopping node.")
+            self.stop_robot()  # 로봇 정지
+            self.destroy_node()  # 노드 종료
+            rclpy.shutdown()  # ROS 종료
+            return
+
+        # 제어 명령 퍼블리시
+        self.velocity_publisher.publish(cmd_vel)
+
+        # 현재 상태 출력
+        self.get_logger().info(f"Distance Error: {distance_error:.3f}, Lateral Error: {lateral_error:.3f}")
+        self.get_logger().info(f"Command Velocities -> Linear X: {cmd_vel.linear.x:.3f}, Angular Z: {cmd_vel.angular.z:.3f}")
+
+        # 짧게 움직인 후 멈춤
+        time.sleep(0.3)  # 0.3초 동안 움직임
+        self.stop_robot()
+
+        # 2초 동안 대기
+        self.get_logger().info("Waiting for 2 seconds to detect ArUco marker...")
+        time.sleep(2.0)  # 2초 대기
+
+
+
+    def stop_robot(self):
+        """로봇을 정지"""
+        cmd_vel = Twist()
+        cmd_vel.linear.x = 0.0
+        cmd_vel.angular.z = 0.0
+        self.velocity_publisher.publish(cmd_vel)
+        self.get_logger().info("Robot stopped.")
+
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = ArucoMarkerFollower()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
