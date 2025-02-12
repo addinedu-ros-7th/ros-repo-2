@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import PointStamped, PoseStamped
@@ -93,7 +94,10 @@ class PingPongPublisher(Node):
 
             if len(result[0].boxes) == 0:
                 self.get_logger().warn("No objects detected by YOLO.")
-                self.clear_marker()
+                # 모든 활성 마커를 제거
+                for marker_id in self.marker_ids[:]:
+                    self.clear_marker(marker_id)
+                self.marker_ids.clear()  # 마커 ID 목록 초기화
                 return
 
             # 결과 처리
