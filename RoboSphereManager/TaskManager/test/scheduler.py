@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import socket
 import json
 from queue import PriorityQueue
@@ -142,16 +143,17 @@ class Scheduler(Node):
     def get_task_robot_id(self, target):
         if not robot_states:
             return None
+        
+        if isinstance(target, str):
+            target = target.replace("(", "").replace(")", "").split(",")  # 문자열을 튜플처럼 변환
+            target = tuple(map(float, target))  # float로 변환
 
         # target을 Point 객체로 변환
         target_point = Point()
-        if isinstance(target, tuple):
-            target_point.x = float(target[0])
-            target_point.y = float(target[1])
-            target_point.z = 0.0
-        else:
-            target_point = target
-
+        target_point.x = float(target[0])
+        target_point.y = float(target[1])
+        target_point.z = 0.0
+    
         # Idle 상태인 로봇 중에서 가장 가까운 로봇을 찾음
         closest_robot = None
         min_distance = float('inf')
@@ -192,7 +194,7 @@ class Scheduler(Node):
         if command == 1:
             self.get_logger().info(f"Periodic(test) task: command={command}, start periodic robot task")
 
-        elif command == 2 or command == 3:
+        elif command == 2 or command == 3 or command == 4:
             self.get_logger().info(f"Task: command={command}, table_id={table_id}, target={target}")
             
             robot_id = self.get_task_robot_id(target)
@@ -202,15 +204,13 @@ class Scheduler(Node):
             if robot_id:
                 # 문자열로 명시적 변환
                 robot_id = str(robot_id)
+                if robot_id == None:
+                    self.get_logger().info("robot id is none !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                 make_path(robot_id, command, table_id, target)
                 self.get_logger().info(f"Make Path: command={command}, target={target}, table_id={table_id}")
             else:
                 self.get_logger().warn("No available robot found for task!")
-
-        elif command == 4:
-            robot_id = "pinky1"
-            make_path(robot_id, command, table_id, target)
-            self.get_logger().info(f"Make Path: command={command}, target={target}, table_id={table_id}")
+                
         else:
 
             self.get_logger().info(f"Unknown command: {command}")
