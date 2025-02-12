@@ -51,7 +51,8 @@ class PingPongPublisher(Node):
         self.timer = self.create_timer(1 / 30.0, self.process_frame)
 
         # 상태 초기화
-        self.last_published_marker_id = 0  # RViz Marker ID
+        self.marker_ids = []  # 활성화된 마커 ID들을 추적
+        self.next_marker_id = 0  # 다음 사용할 마커 ID
 
     def robot_pose_callback(self, msg):
         """로봇의 현재 위치와 자세를 업데이트"""
@@ -139,7 +140,9 @@ class PingPongPublisher(Node):
         marker = Marker()
         marker.header.frame_id = "map"
         marker.header.stamp = self.get_clock().now().to_msg()
-        marker.id = self.last_published_marker_id
+        marker.id = self.next_marker_id  # 새로운 ID 사용
+        self.marker_ids.append(self.next_marker_id)
+        self.next_marker_id += 1
         marker.type = Marker.SPHERE
         marker.action = Marker.ADD
         marker.pose.position.x = x
@@ -157,13 +160,17 @@ class PingPongPublisher(Node):
         marker.color.g = 0.0
         marker.color.b = 0.0
         self.marker_pub.publish(marker)
+        
+        # 일정 개수(예: 10개) 이상의 마커가 쌓이면 오래된 것부터 제거
+        if len(self.marker_ids) > 10:
+            self.clear_marker(self.marker_ids.pop(0))
 
-    def clear_marker(self):
-        """Clear the marker from RViz."""
+    def clear_marker(self, marker_id):
+        """Clear the specific marker from RViz."""
         marker = Marker()
         marker.header.frame_id = "map"
         marker.header.stamp = self.get_clock().now().to_msg()
-        marker.id = self.last_published_marker_id
+        marker.id = marker_id
         marker.action = Marker.DELETE
         self.marker_pub.publish(marker)
 
