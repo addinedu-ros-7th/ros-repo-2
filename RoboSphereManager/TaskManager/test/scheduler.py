@@ -201,6 +201,8 @@ class Scheduler(Node):
     def process_task(self, task):
         global is_all_robots_busy
         command, target, table_id = task
+        global task_queue  # 전역 변수 사용 선언
+        task_queue.put(task)  # self.task_queue 대신 전역 변수 task_queue 사용
 
         """
         command
@@ -224,7 +226,6 @@ class Scheduler(Node):
             else:
                 # 로봇을 할당할 수 없는 경우
                 is_all_robots_busy = True  # 전역 변수를 True로 설정
-                self.task_queue.put(task)  # 작업을 다시 큐에 넣음
                 self.get_logger().info("All robots are busy. Task requeued.")
         else:
             self.get_logger().info(f"Unknown command: {command}")
