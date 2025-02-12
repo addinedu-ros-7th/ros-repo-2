@@ -14,15 +14,17 @@ from interface_package.msg import PointAndStatus
 from geometry_msgs.msg import Point  # 좌표를 다루기 위해 필요
 from geometry_msgs.msg import PoseStamped
 import json
-import math
-
+import socket
+import queue
+import threading
 
 class DynamicWaypointNavigator(Node):
     def __init__(self, namespace):
         super().__init__('dynamic_waypoint_navigator')
 
+        self.task_queue = queue.Queue(maxsize=1)        
         self.reception = PoseStamped()
-        self.srv = self.create_service(PathRequest, f'/{namespace}/task_and_path_listener', self.handle_task_request)
+        # self.srv = self.create_service(PathRequest, f'/{namespace}/task_and_path_listener', self.handle_task_request)
         self.status_publisher = self.create_publisher(PointAndStatus, f'/{namespace}/status_publisher', 3)
         self.subscription = self.create_subscription(
             PoseStamped,  # /tracked_pose가 PoseStamped 형식이라고 가정
@@ -40,34 +42,63 @@ class DynamicWaypointNavigator(Node):
             3
         )
 
-    def handle_task_request(self, request, response):
-        # Log the received request data
-        self.get_logger().info(f'Received path request: {request.request_data}')
+        task_tcp_thread = threading.Thread(target=self.receive_tcp_task)
+        task_tcp_thread.daemon = True  # 데몬 스레드로 설정해서 프로그램 종료 시 자동 종료
+        task_tcp_thread.start()
 
-        if not request.request_data or not request.request_data.strip():
-            self.get_logger().error("Received empty request data.")
-            response.success = False
-            response.message = "Request data is empty."
-            return response
+    def receive_tcp_task(self):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('localhost', 9154))  # 서버 주소와 포트
+                s.listen()
+                print('Listening for incoming connections...')
+                
+                while True:
+                    conn, addr = s.accept()
+                    with conn:
+                        print('Connected by', addr)
+                        data = conn.recv(1024)
+                        if not data:
+                            break
+                        signal = json.loads(data.decode('utf-8'))
+                        self.process_task(signal)
+                        
+        except KeyboardInterrupt:
+            print("Keyboard interrupt detected. Exiting...")
+            exit()
+
+        finally:
+            print("bettery clean up completed")
+
+    # 받은 시그널 처리
+    def process_task(self, signal):
+        print(f"Received signal: {signal}, {signal['robot_id']}")
+        # if self.task_queue.full():
+        #     self.task_queue.get()  # 큐가 가득 차면 가장 오래된 데이터 제거
+        # self.task_queue.put(signal)  # 새로운 데이터 큐에 삽입
+        self.get_logger().info(f'Received path request: {signal}')
 
         try:
-            # JSON 문자열을 딕셔너리로 변환
-            parsed_data = json.loads(request.request_data)
-
-            robot_id = parsed_data.get("robot_id", "Unknown")
-            command = int(parsed_data.get("command", 0))
+            # signal = json.dumps({
+            #     "robot_id": robot_id,
+            #     "command": command,
+            #     "table_id": table_id_str,
+            #     "target": target_str
+            # })
+            robot_id = signal['robot_id']
+            command = int(signal['command'])
 
             if command == 4:
                 self.get_logger().info(f'Processing command {command}')
                 # "table_id"와 "target"을 실제 리스트로 변환
-                table_id = json.loads(parsed_data["table_id"])  # "[1, 2, 4]" 형식에서 실제 리스트로 변환
-                target_list = json.loads(parsed_data["target"])      # "[[...], [...]]" 형식에서 실제 2D 리스트로 변환
+                table_id = json.loads(signal["table_id"])  # "[1, 2, 4]" 형식에서 실제 리스트로 변환
+                target_list = json.loads(signal["target"])      # "[[...], [...]]" 형식에서 실제 2D 리스트로 변환
 
                 self.get_logger().debug(f'Data types - table_id: {type(table_id)}, target_list: {type(target_list)}')
             else :
                 self.get_logger().info(f'Processing command {command}')
-                table_id = int(parsed_data.get("table_id", -1))
-                target_list = parsed_data.get("target", [[0, 0]])  # 기본값으로 2D 리스트 설정
+                table_id = int(signal["table_id"])
+                target_list = signal["target"]  # 기본값으로 2D 리스트 설정
 
             # 리스트를 numpy 배열로 변환
             target_array = np.array(target_list)
@@ -116,17 +147,111 @@ class DynamicWaypointNavigator(Node):
 
             self.status = "Walking"
 
-            response.success = True
-            response.message = "Task received successfully."
-
             # 주기적으로 탁구공 감지 여부를 확인하는 타이머 추가
             # self.create_timer(10.0, self.check_ping_pong_timeout)
 
         except Exception as e:
-            response.success = False
-            response.message = f"Error: {str(e)}"
+            self.get_logger().info(f'{e}')
         
-        return response
+        # return response
+
+    # def show_bettery(self):
+    #     # 큐에서 최신 배터리 상태를 가져와서 출력
+    #     while True:
+    #         if not self.task_queue.empty():
+    #             signal = self.task_queue.get()
+    #             print(f'Bettery: {signal["bettery"]}')
+    #         else:
+    #             print("Bettery No signal available or empty.")
+    #         time.sleep(1)
+
+    # def handle_task_request(self, request, response):
+    #     # Log the received request data
+    #     self.get_logger().info(f'Received path request: {request.request_data}')
+
+    #     if not request.request_data or not request.request_data.strip():
+    #         self.get_logger().error("Received empty request data.")
+    #         response.success = False
+    #         response.message = "Request data is empty."
+    #         return response
+
+    #     try:
+    #         # JSON 문자열을 딕셔너리로 변환
+    #         parsed_data = json.loads(request.request_data)
+
+    #         robot_id = parsed_data.get("robot_id", "Unknown")
+    #         command = int(parsed_data.get("command", 0))
+
+    #         if command == 4:
+    #             self.get_logger().info(f'Processing command {command}')
+    #             # "table_id"와 "target"을 실제 리스트로 변환
+    #             table_id = json.loads(parsed_data["table_id"])  # "[1, 2, 4]" 형식에서 실제 리스트로 변환
+    #             target_list = json.loads(parsed_data["target"])      # "[[...], [...]]" 형식에서 실제 2D 리스트로 변환
+
+    #             self.get_logger().debug(f'Data types - table_id: {type(table_id)}, target_list: {type(target_list)}')
+    #         else :
+    #             self.get_logger().info(f'Processing command {command}')
+    #             table_id = int(parsed_data.get("table_id", -1))
+    #             target_list = parsed_data.get("target", [[0, 0]])  # 기본값으로 2D 리스트 설정
+
+    #         # 리스트를 numpy 배열로 변환
+    #         target_array = np.array(target_list)
+
+    #         # self.get_logger().info(f"Received Target: \n{target}")
+    #         self.get_logger().info(f"Parsed Data -> Robot ID: {robot_id}, Command: {command}, Table ID: {table_id}, Target: {target_array}")
+
+    #         self.target = target_array
+
+    #         # 웨이포인트 변환 및 theta 설정
+    #         self.waypoints = self.generate_waypoints(self.target)
+
+    #         self.current_waypoint_index = 0  # 현재 목표 웨이포인트 인덱스
+    #         self.robot_stopped = False  # 로봇 정지 여부
+    #         self.cooldown_start_time = None
+    #         self.cooldown_time = 5.0  # 새로운 웨이포인트 추가 후 쿨다운 시간
+
+    #         # 탁구공 감지 관련 변수
+    #         self.previous_ball_coords = None
+    #         self.stable_coords_time = None
+    #         self.start_wait_time = None
+    #         self.stability_threshold = 5.0  # 안정성 검사 시간 (초)
+    #         self.max_coord_deviation = 0.1  # 좌표 변동 허용 범위
+
+    #         self.last_ping_pong_time = time.time()  #  마지막으로 탁구공이 감지된 시간
+    #         self.max_wait_time = 5.0  #  탁구공 감지가 없으면 5초 후 원래 웨이포인트로 이동
+    #         self.excluded_zones = [
+    #         #    {"x_min": 0.41, "x_max": 0.97, "y_min": -1.4, "y_max": -1.06},  #  영역 1
+    #         #   {"x_min": 1.76, "x_max": 2.21, "y_min": -0.69, "y_max": -0.38}  #  영역 2
+    #         ]
+
+    #         # Publisher
+    #         self.reached_goal_pub = self.create_publisher(Bool, '/reached_goal', 10)
+
+    #         # Subscriber
+    #         self.create_subscription(PointStamped, '/ping_pong_map_coords', self.ping_pong_callback, 10)
+
+    #         # Navigation Client
+    #         self.nav_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
+    #         self.get_logger().info("Waiting for action server...")
+    #         self.nav_client.wait_for_server()
+    #         self.get_logger().info("Action server ready. Starting navigation...")
+
+    #         # 웨이포인트 주행 시작
+    #         self.send_goal()
+
+    #         self.status = "Walking"
+
+    #         response.success = True
+    #         response.message = "Task received successfully."
+
+    #         # 주기적으로 탁구공 감지 여부를 확인하는 타이머 추가
+    #         # self.create_timer(10.0, self.check_ping_pong_timeout)
+
+    #     except Exception as e:
+    #         response.success = False
+    #         response.message = f"Error: {str(e)}"
+        
+    #     return response
     
     def tracked_pose_callback(self, msg):
         """ /tracked_pose 메시지를 받아서 변환 후 /{namespace}/tracked_pose_transfer 로 퍼블리시 """

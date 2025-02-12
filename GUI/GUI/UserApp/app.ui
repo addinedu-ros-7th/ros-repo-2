@@ -49,7 +49,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="page">
      <widget class="QPushButton" name="realtime_table_btn">
@@ -89,65 +89,83 @@
      <widget class="QLabel" name="label_10">
       <property name="geometry">
        <rect>
-        <x>260</x>
-        <y>360</y>
-        <width>101</width>
-        <height>151</height>
+        <x>365</x>
+        <y>350</y>
+        <width>100</width>
+        <height>50</height>
        </rect>
       </property>
       <property name="styleSheet">
        <string notr="true">border: 2px solid #007bff; /* 파란색 테두리 */</string>
       </property>
       <property name="text">
-       <string> 테이블 3</string>
+       <string>테이블 3</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
       </property>
      </widget>
      <widget class="QLabel" name="label_9">
       <property name="geometry">
        <rect>
-        <x>420</x>
-        <y>190</y>
-        <width>171</width>
-        <height>91</height>
+        <x>245</x>
+        <y>350</y>
+        <width>100</width>
+        <height>50</height>
        </rect>
       </property>
       <property name="styleSheet">
        <string notr="true">border: 2px solid #007bff; /* 파란색 테두리 */</string>
       </property>
       <property name="text">
-       <string>            테이블 2</string>
+       <string>테이블 2</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
       </property>
      </widget>
      <widget class="QLabel" name="label_8">
       <property name="geometry">
        <rect>
-        <x>190</x>
-        <y>190</y>
-        <width>171</width>
-        <height>91</height>
+        <x>250</x>
+        <y>220</y>
+        <width>60</width>
+        <height>100</height>
        </rect>
       </property>
       <property name="styleSheet">
        <string notr="true">border: 2px solid #007bff; /* 파란색 테두리 */</string>
       </property>
       <property name="text">
-       <string>           테이블 1</string>
+       <string>테이블 1</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
       </property>
      </widget>
      <widget class="QLabel" name="label_11">
       <property name="geometry">
        <rect>
-        <x>480</x>
-        <y>360</y>
-        <width>101</width>
-        <height>151</height>
+        <x>355</x>
+        <y>220</y>
+        <width>50</width>
+        <height>100</height>
        </rect>
       </property>
       <property name="styleSheet">
        <string notr="true">border: 2px solid #007bff; /* 파란색 테두리 */</string>
       </property>
       <property name="text">
-       <string> 테이블 4</string>
+       <string>테이블 4</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
       </property>
      </widget>
      <widget class="QPushButton" name="prev_btn">
@@ -179,10 +197,39 @@
        <string/>
       </property>
       <property name="pixmap">
-       <pixmap>map.png</pixmap>
+       <pixmap>../../../../data/fourtable.pgm</pixmap>
       </property>
       <property name="scaledContents">
        <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="pinky_status">
+      <property name="geometry">
+       <rect>
+        <x>220</x>
+        <y>480</y>
+        <width>66</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::VLine</enum>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="pinky1">
+      <property name="geometry">
+       <rect>
+        <x>110</x>
+        <y>90</y>
+        <width>66</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
       </property>
      </widget>
      <zorder>label_7</zorder>
@@ -191,6 +238,8 @@
      <zorder>label_8</zorder>
      <zorder>label_11</zorder>
      <zorder>prev_btn</zorder>
+     <zorder>pinky_status</zorder>
+     <zorder>pinky1</zorder>
     </widget>
     <widget class="QWidget" name="page_3">
      <widget class="QLineEdit" name="password_input">

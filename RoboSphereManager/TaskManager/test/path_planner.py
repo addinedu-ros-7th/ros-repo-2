@@ -8,6 +8,7 @@ import heapq
 import time
 from PIL import Image
 import yaml
+import socket
 
 class PathPlannerService(Node):
 
@@ -19,8 +20,8 @@ class PathPlannerService(Node):
         self.command_list = ["request", "routine", "exit", "collision"]
 
         self.filepath = "/home/kjj73/test_folder/src/PathMaker/"
-        self.pgmpath = '/home/kjj73/test_folder/src/PathMaker/fourtable.pgm'
-        self.yamlpath = '/home/kjj73/test_folder/src/PathMaker/fourtable.yaml'
+        self.pgmpath = self.filepath+'fourtable.pgm'
+        self.yamlpath = self.filepath+'fourtable.yaml'
 
         self.pixelSize = 5                              # 원래 픽셀 마다의 크기 0.05 cm
         self.collisionArea = 2                          # 로봇의 사이즈를 고려한 장애물 영역 설정
@@ -145,7 +146,7 @@ class PathPlannerService(Node):
                 end = [34, 12]
                 to_FoodCase = self.astarStart(start, end)
                 
-                start = [34, 12]
+                start = [34, 14]
                 end = [12, 14]
                 to_EndPoint = self.astarStart(start, end)
 
@@ -312,13 +313,53 @@ class TaskProviderService(Node):
 
 def make_path(robot_id, command, table_id, target):
     # Create a node for the service client
-    task_provider_client = TaskProviderService("pinky1")
-    
-    # Send the path request
-    task_provider_client.send_task_request(robot_id, command, table_id, target)
-    
-    # Shutdown the node after sending the request
-    task_provider_client.destroy_node()
+    # task_provider_client = TaskProviderService("pinky1")
+    # # Send the path request
+    # task_provider_client.send_task_request(robot_id, command, table_id, target)
+    # # Shutdown the node after sending the request
+    # task_provider_client.destroy_node()
+    print("target :", type(target), target)
+    if isinstance(target, np.ndarray):
+        target = np.round(target, 6).tolist()  # 각 요소 소수점 6자리로 반올림 후 리스트로 변환
+        # print("Converted target to list:", target)
+        
+    if isinstance(table_id, np.ndarray):
+        table_id = table_id.tolist()  # 리스트로 변환
+
+    table_id_str = str(table_id)  # 대괄호 포함된 리스트 형식으로 변환
+    target_str = str(target)      # 대괄호 포함된 리스트 형식으로 변환
+
+    print("robot_id :", type(robot_id), robot_id)
+    print("command :", type(command), command)
+    print("table_id :", type(table_id_str), table_id_str)
+    print("target :", type(target_str), target_str)
+    print()
+
+    # JSON 데이터 생성
+    signal = {
+        "robot_id": robot_id,
+        "command": command,
+        "table_id": table_id_str,
+        "target": target_str
+    }
+    signal_json = json.dumps(signal)  # JSON 문자열 변환
+
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect(('localhost', 9154))  # 서버 주소와 포트
+            print(f"서버 localhost:9154에 연결 성공")
+
+            s.sendall(signal_json.encode('utf-8'))  # 정상적으로 인코딩하여 전송
+
+            # 서버 응답 받기
+            # response = s.recv(1024)
+            # print(f"서버 응답: {response.decode('utf-8')}")
+
+            # return response  # 응답 반환 후 함수 종료
+
+    except (socket.error, ConnectionRefusedError) as e:
+        print(f"서버 localhost:9154에 연결 실패: {e}.")
+
 
 def main(args=None):
     rclpy.init(args=args)
