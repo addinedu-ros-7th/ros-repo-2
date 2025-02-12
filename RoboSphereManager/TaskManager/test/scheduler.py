@@ -13,6 +13,7 @@ from geometry_msgs.msg import Point  # 좌표를 다루기 위해 필요
 
 task_queue = PriorityQueue()
 robot_states = {}  # 로봇의 상태와 위치를 저장하는 전역 딕셔너리
+is_all_robots_busy = False
 
 def receive_tcp_signal():
     try:
@@ -172,13 +173,33 @@ class Scheduler(Node):
         return ((position.x - target.x) ** 2 + 
                 (position.y - target.y) ** 2) ** 0.5
 
+    def check_available_robots(self):
+        """로봇의 현재 상태를 확인하고 사용 가능한 로봇이 있는지 확인하는 함수"""
+        for robot_id, state in self.robot_states.items():
+            # state가 0이면 로봇이 유휴 상태(사용 가능)
+            if state == 0:
+                self.get_logger().info(f"Available robot found: {robot_id}")
+                return True
+        self.get_logger().info("No available robots - all robots are busy")
+        return False
+
     def execute_tasks(self):
+        global is_all_robots_busy
+        
+        # 모든 로봇이 작업 중이고, 사용 가능한 로봇이 없다면 실행하지 않음
+        if is_all_robots_busy:
+            if self.check_available_robots():
+                is_all_robots_busy = False  # 사용 가능한 로봇이 있으면 플래그 초기화
+            else:
+                return  # 아직 모든 로봇이 작업 중이면 실행하지 않음
+        
         while rclpy.ok():
             if not task_queue.empty():
                 task = task_queue.get()
                 self.process_task(task)
 
     def process_task(self, task):
+        global is_all_robots_busy
         command, target, table_id = task
 
         """
@@ -191,28 +212,21 @@ class Scheduler(Node):
         
         self.get_logger().info(f"Processing task: command={command}, target={target}, table_id={table_id}")
 
-        if command == 1:
-            self.get_logger().info(f"Periodic(test) task: command={command}, start periodic robot task")
-
-        elif command == 2 or command == 3 or command == 4:
-            self.get_logger().info(f"Task: command={command}, table_id={table_id}, target={target}")
-            
+        if command:
             robot_id = self.get_task_robot_id(target)
-            # 타입 확인을 위한 로그 추가
+            
             self.get_logger().info(f"Selected robot_id: {robot_id}, Type: {type(robot_id)}")
             
             if robot_id:
-                # 문자열로 명시적 변환
                 robot_id = str(robot_id)
-                if robot_id == None:
-                    self.get_logger().info("robot id is none !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                 make_path(robot_id, command, table_id, target)
                 self.get_logger().info(f"Make Path: command={command}, target={target}, table_id={table_id}")
             else:
-                self.get_logger().warn("No available robot found for task!")
-                
+                # 로봇을 할당할 수 없는 경우
+                is_all_robots_busy = True  # 전역 변수를 True로 설정
+                self.task_queue.put(task)  # 작업을 다시 큐에 넣음
+                self.get_logger().info("All robots are busy. Task requeued.")
         else:
-
             self.get_logger().info(f"Unknown command: {command}")
 
 def main(args=None):

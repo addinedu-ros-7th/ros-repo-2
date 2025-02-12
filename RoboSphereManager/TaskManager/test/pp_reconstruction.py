@@ -251,7 +251,7 @@ class DynamicWaypointNavigator(Node):
         return waypoints
 
     def ping_pong_callback(self, msg):
-        """탁구공 감지 및 안정적인 좌표 확인 후 웨이포인트 추가"""
+        """탁구공 감지 및 안정적인 좌표 확인 후 웨이포인트 추가"""  
         ball_x, ball_y = msg.point.x, msg.point.y
 
         # 쿨다운 중이면 무시
@@ -360,10 +360,13 @@ class DynamicWaypointNavigator(Node):
         if self.robot_stopped:
             return
 
-        if self.current_waypoint_index >= len(self.waypoints):  # 필터링된 웨이포인트 기준으로 비교
+        if self.current_waypoint_index >= len(self.waypoints):
             self.get_logger().info("Reached the final waypoint.")
             self.reached_goal_pub.publish(Bool(data=True))
             self.cooldown_start_time = None
+            # 상태를 Idle로 변경
+            self.status = "Idle"
+            self.get_logger().info("Robot status changed to Idle")
             return
 
         waypoint = self.waypoints[self.current_waypoint_index]  # 필터링된 웨이포인트 사용
