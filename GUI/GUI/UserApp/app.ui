@@ -206,27 +206,14 @@
      <widget class="QLabel" name="pinky_status">
       <property name="geometry">
        <rect>
-        <x>220</x>
-        <y>480</y>
+        <x>190</x>
+        <y>90</y>
         <width>66</width>
         <height>19</height>
        </rect>
       </property>
       <property name="frameShape">
        <enum>QFrame::VLine</enum>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-     </widget>
-     <widget class="QLabel" name="pinky1">
-      <property name="geometry">
-       <rect>
-        <x>110</x>
-        <y>90</y>
-        <width>66</width>
-        <height>19</height>
-       </rect>
       </property>
       <property name="text">
        <string/>
@@ -239,7 +226,6 @@
      <zorder>label_11</zorder>
      <zorder>prev_btn</zorder>
      <zorder>pinky_status</zorder>
-     <zorder>pinky1</zorder>
     </widget>
     <widget class="QWidget" name="page_3">
      <widget class="QLineEdit" name="password_input">

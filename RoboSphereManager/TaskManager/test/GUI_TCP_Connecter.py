@@ -27,7 +27,10 @@ class BatterySubscriber(Node):
     
     def send_signal_over_tcp(self, signal):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect(('localhost', 9152))  # 서버 주소와 포트
+            if self.namespace == "pinky1":
+                s.connect(('localhost', 9152))  # 서버 주소와 포트
+            else :
+                s.connect(('localhost', 9153))  # 서버 주소와 포트
             # signal to json
             s.sendall(json.dumps(signal).encode('utf-8'))
 
@@ -54,6 +57,7 @@ class StatusSubscriber(Node):
         )
         self.subscription  # prevent unused variable warning
         print(f'/{namespace}/status_publisher',)
+        self.namespace = namespace
 
     def status_callback(self, msg):
         self.data = msg.status
@@ -62,7 +66,10 @@ class StatusSubscriber(Node):
     
     def send_signal_over_tcp(self, signal):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect(('localhost', 9153))  # 서버 주소와 포트
+            if self.namespace == "pinky1":
+                s.connect(('localhost', 9156))  # 서버 주소와 포트
+            else :
+                s.connect(('localhost', 9155))  # 서버 주소와 포트
             # signal to json
             s.sendall(json.dumps(signal).encode('utf-8'))
 
@@ -105,10 +112,14 @@ def main():
     rclpy.init()
     node1 = BatterySubscriber(namespace="pinky1")
     node2 = StatusSubscriber(namespace="pinky1")
+    node3 = BatterySubscriber(namespace="pinky2")
+    node4 = StatusSubscriber(namespace="pinky2")
 
     executor = rclpy.executors.MultiThreadedExecutor()
     executor.add_node(node1)
     executor.add_node(node2)
+    executor.add_node(node3)
+    executor.add_node(node4)
 
     try:
         executor.spin()  # rclpy.spin(node) 대신 사용

@@ -238,21 +238,35 @@ class WindowClass(QMainWindow, from_class) :
 
         self.setWindowTitle("App")
 
-        self.bettery_queue = queue.Queue(maxsize=2)
-        bettery_tcp_thread = threading.Thread(target=self.receive_tcp_bettery)
-        bettery_tcp_thread.daemon = True  # 데몬 스레드로 설정해서 프로그램 종료 시 자동 종료
-        bettery_tcp_thread.start()
+        self.pinky1_bettery_queue = queue.Queue(maxsize=2)
+        pinky1_bettery_tcp_thread = threading.Thread(target=self.pinky1_receive_tcp_bettery)
+        pinky1_bettery_tcp_thread.daemon = True  # 데몬 스레드로 설정해서 프로그램 종료 시 자동 종료
+        pinky1_bettery_tcp_thread.start()
 
-        bettery_thread = threading.Thread(target=self.show_bettery, daemon=True)
+        self.pinky2_bettery_queue = queue.Queue(maxsize=2)
+        pinky1_bettery_tcp_thread = threading.Thread(target=self.pinky2_receive_tcp_bettery)
+        pinky1_bettery_tcp_thread.daemon = True  # 데몬 스레드로 설정해서 프로그램 종료 시 자동 종료
+        pinky1_bettery_tcp_thread.start()
+
+        bettery_thread = threading.Thread(target=self.show_bettery_1, daemon=True)
+        bettery_thread.start()
+        bettery_thread = threading.Thread(target=self.show_bettery_2, daemon=True)
         bettery_thread.start()
 
-        self.status_queue = queue.Queue(maxsize=2)
-        status_tcp_thread = threading.Thread(target=self.receive_tcp_status)
-        status_tcp_thread.daemon = True  # 데몬 스레드로 설정해서 프로그램 종료 시 자동 종료
-        status_tcp_thread.start()
+        self.status_queue_1 = queue.Queue(maxsize=2)
+        pinky1_status_tcp_thread = threading.Thread(target=self.pinky1_receive_tcp_status)
+        pinky1_status_tcp_thread.daemon = True  # 데몬 스레드로 설정해서 프로그램 종료 시 자동 종료
+        pinky1_status_tcp_thread.start()
 
-        status_thread = threading.Thread(target=self.show_status, daemon=True)
-        status_thread.start()
+        self.status_queue_2 = queue.Queue(maxsize=2)
+        pinky2_status_tcp_thread = threading.Thread(target=self.pinky2_receive_tcp_status)
+        pinky2_status_tcp_thread.daemon = True  # 데몬 스레드로 설정해서 프로그램 종료 시 자동 종료
+        pinky2_status_tcp_thread.start()
+
+        status_thread_1 = threading.Thread(target=self.show_status_1, daemon=True)
+        status_thread_1.start()
+        status_thread_2 = threading.Thread(target=self.show_status_2, daemon=True)
+        status_thread_2.start()
 
         self.db_manager = DatabaseManager()  # 데이터베이스 연결 객체 생성
         self.previous_table_status = {}  # 이전 테이블 상태 저장
@@ -387,7 +401,7 @@ class WindowClass(QMainWindow, from_class) :
         # positionPainter = QPainter(self.pixmap2)
         # positionPainter.end()
 
-    def receive_tcp_bettery(self):
+    def pinky1_receive_tcp_bettery(self):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.bind(('localhost', 9152))  # 서버 주소와 포트
@@ -402,7 +416,31 @@ class WindowClass(QMainWindow, from_class) :
                         if not data:
                             break
                         signal = json.loads(data.decode('utf-8'))
-                        self.process_bettery(signal)
+                        self.process_bettery_1(signal)
+                        
+        except KeyboardInterrupt:
+            print("Keyboard interrupt detected. Exiting...")
+            exit()
+
+        finally:
+            print("bettery clean up completed")
+
+    def pinky2_receive_tcp_bettery(self):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('localhost', 9153))  # 서버 주소와 포트
+                s.listen()
+                print('Listening for incoming connections...')
+                
+                while True:
+                    conn, addr = s.accept()
+                    with conn:
+                        print('Connected by', addr)
+                        data = conn.recv(1024)
+                        if not data:
+                            break
+                        signal = json.loads(data.decode('utf-8'))
+                        self.process_bettery_2(signal)
                         
         except KeyboardInterrupt:
             print("Keyboard interrupt detected. Exiting...")
@@ -412,26 +450,43 @@ class WindowClass(QMainWindow, from_class) :
             print("bettery clean up completed")
 
     # 받은 시그널 처리
-    def process_bettery(self, signal):
+    def process_bettery_1(self, signal):
         print(f"Received signal: {signal['bettery']}")
-        if self.bettery_queue.full():
-            self.bettery_queue.get()  # 큐가 가득 차면 가장 오래된 데이터 제거
-        self.bettery_queue.put(signal)  # 새로운 데이터 큐에 삽입
+        if self.pinky1_bettery_queue.full():
+            self.pinky1_bettery_queue.get()  # 큐가 가득 차면 가장 오래된 데이터 제거
+        self.pinky1_bettery_queue.put(signal)  # 새로운 데이터 큐에 삽입
 
-    def show_bettery(self):
+    def show_bettery_1(self):
         # 큐에서 최신 배터리 상태를 가져와서 출력
         while True:
-            if not self.bettery_queue.empty():
-                signal = self.bettery_queue.get()
+            if not self.pinky1_bettery_queue.empty():
+                signal = self.pinky1_bettery_queue.get()
                 print(f'Bettery: {signal["bettery"]}')
             else:
                 print("Bettery No signal available or empty.")
             time.sleep(1)
 
-    def receive_tcp_status(self):
+    # 받은 시그널 처리
+    def process_bettery_2(self, signal):
+        print(f"Received signal: {signal['bettery']}")
+        if self.pinky2_bettery_queue.full():
+            self.pinky2_bettery_queue.get()  # 큐가 가득 차면 가장 오래된 데이터 제거
+        self.pinky2_bettery_queue.put(signal)  # 새로운 데이터 큐에 삽입
+
+    def show_bettery_2(self):
+        # 큐에서 최신 배터리 상태를 가져와서 출력
+        while True:
+            if not self.pinky2_bettery_queue.empty():
+                signal = self.pinky2_bettery_queue.get()
+                print(f'Bettery: {signal["bettery"]}')
+            else:
+                print("Bettery No signal available or empty.")
+            time.sleep(1)
+
+    def pinky1_receive_tcp_status(self):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.bind(('localhost', 9153))  # 서버 주소와 포트
+                s.bind(('localhost', 9155))  # 서버 주소와 포트
                 s.listen()
                 print('Listening for incoming connections...')
                 
@@ -443,7 +498,31 @@ class WindowClass(QMainWindow, from_class) :
                         if not data:
                             break
                         signal = json.loads(data.decode('utf-8'))
-                        self.process_status(signal)
+                        self.process_status_1(signal)
+                        
+        except KeyboardInterrupt:
+            print("Keyboard interrupt detected. Exiting...")
+            exit()
+
+        finally:
+            print("status clean up completed")
+
+    def pinky2_receive_tcp_status(self):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('localhost', 9156))  # 서버 주소와 포트
+                s.listen()
+                print('Listening for incoming connections...')
+                
+                while True:
+                    conn, addr = s.accept()
+                    with conn:
+                        # print('Connected by', addr)
+                        data = conn.recv(1024)
+                        if not data:
+                            break
+                        signal = json.loads(data.decode('utf-8'))
+                        self.process_status_2(signal)
                         
         except KeyboardInterrupt:
             print("Keyboard interrupt detected. Exiting...")
@@ -453,18 +532,24 @@ class WindowClass(QMainWindow, from_class) :
             print("status clean up completed")
 
     # 받은 시그널 처리
-    def process_status(self, signal):
+    def process_status_1(self, signal):
         # print(f"Received signal: {signal}")
-        if self.status_queue.full():
-            self.status_queue.get()  # 큐가 가득 차면 가장 오래된 데이터 제거
-        self.status_queue.put(signal)  # 새로운 데이터 큐에 삽입
+        if self.status_queue_1.full():
+            self.status_queue_1.get()  # 큐가 가득 차면 가장 오래된 데이터 제거
+        self.status_queue_1.put(signal)  # 새로운 데이터 큐에 삽입
 
-    def show_status(self):
+    def process_status_2(self, signal):
+        # print(f"Received signal: {signal}")
+        if self.status_queue_2.full():
+            self.status_queue_2.get()  # 큐가 가득 차면 가장 오래된 데이터 제거
+        self.status_queue_2.put(signal)  # 새로운 데이터 큐에 삽입
+
+    def show_status_1(self):
         # 큐에서 최신 배터리 상태를 가져와서 출력
-        self.pinky_status.setGeometry(0,0, self.label_7.width(), self.label_7.height())
+        self.pinky_status_1.setGeometry(0,0, self.label_7.width(), self.label_7.height())
         self.pixmap2 = QPixmap(self.label_7.width(), self.label_7.height())
         self.pixmap2.fill(Qt.transparent)  # 🎯 fill()을 먼저 실행
-        self.pinky_status.setPixmap(self.pixmap2)
+        self.pinky_status_1.setPixmap(self.pixmap2)
         # self.pinky_status.fill(Qt.transparent)
         # self.pinky_status.pixmap().fill(Qt.transparent)
         # positionPainter = QPainter(self.pinky_status.pixmap())
@@ -472,18 +557,18 @@ class WindowClass(QMainWindow, from_class) :
 
         pinky1_size = 50
         path = '/home/kjj73/test_folder/data/'
-        self.pinky_emotion = path+'pinky_emoticon.png'
+        pinky_emotion = path+'pinky_emoticon.png'
 
         self.pinky1.setGeometry(0, 0, pinky1_size, pinky1_size)
         self.pixmap3 = QPixmap()
-        self.pixmap3.load(self.pinky_emotion)
+        self.pixmap3.load(pinky_emotion)
         self.pixmap3 = self.pixmap3.scaled(pinky1_size, pinky1_size)
         self.pinky1.setPixmap(self.pixmap3)
 
         while True:
             positionPainter = QPainter(self.pixmap2)
-            if not self.status_queue.empty():
-                signal = self.status_queue.get()
+            if not self.status_queue_1.empty():
+                signal = self.status_queue_1.get()
                 # print(f'show status : {signal['status']}, c : {signal['current_position']}, s : {signal['start_position']}, g : {signal['goal_position']}, current_xyz : {signal["current_position"]["x"]}, {signal["current_position"]["y"]}, {signal["current_position"]["z"]}')
                 # x y z에 접근
                 # 예) signal["current_position"]["x"]
@@ -543,7 +628,97 @@ class WindowClass(QMainWindow, from_class) :
                 positionPainter.end()
 
                 # 변경된 QPixmap을 위젯에 다시 설정하여 업데이트 반영
-                self.pinky_status.setPixmap(self.pixmap2)
+                self.pinky_status_1.setPixmap(self.pixmap2)
+            else:
+                print("Status No signal available or empty.")
+                positionPainter.end()
+            time.sleep(1)
+
+    def show_status_2(self):
+        # 큐에서 최신 배터리 상태를 가져와서 출력
+        self.pinky_status_2.setGeometry(0,0, self.label_7.width(), self.label_7.height())
+        self.pixmap4 = QPixmap(self.label_7.width(), self.label_7.height())
+        self.pixmap4.fill(Qt.transparent)  # 🎯 fill()을 먼저 실행
+        self.pinky_status_2.setPixmap(self.pixmap4)
+        # self.pinky_status.fill(Qt.transparent)
+        # self.pinky_status.pixmap().fill(Qt.transparent)
+        # positionPainter = QPainter(self.pinky_status.pixmap())
+        # positionPainter = QPainter(self.pixmap2)
+
+        pinky1_size = 50
+        path = '/home/kjj73/test_folder/data/'
+        pinky_emotion = path+'pinky_emoticon.png'
+
+        self.pinky2.setGeometry(0, 0, pinky1_size, pinky1_size)
+        self.pixmap4 = QPixmap()
+        self.pixmap4.load(pinky_emotion)
+        self.pixmap4 = self.pixmap4.scaled(pinky1_size, pinky1_size)
+        self.pinky2.setPixmap(self.pixmap4)
+
+        while True:
+            positionPainter = QPainter(self.pixmap4)
+            if not self.status_queue_2.empty():
+                signal = self.status_queue_2.get()
+                # print(f'show status : {signal['status']}, c : {signal['current_position']}, s : {signal['start_position']}, g : {signal['goal_position']}, current_xyz : {signal["current_position"]["x"]}, {signal["current_position"]["y"]}, {signal["current_position"]["z"]}')
+                # x y z에 접근
+                # 예) signal["current_position"]["x"]
+                # 위치 정보를 담고 있는 키 목록
+                task_status = signal['status']
+                # 각 위치의 x, y, z 값을 실수형(float) NumPy 배열로 변환
+                positions = ['current_position', 'start_position', 'goal_position']
+                grouped_xyz = np.array([
+                    np.array([signal[pos]['x'], signal[pos]['y'], signal[pos]['z']], dtype=np.float32) 
+                    for pos in positions
+                ], dtype=np.float32)
+
+                print(f'show status original : {grouped_xyz}')
+                print(f'show status [:,0] : {grouped_xyz[:,0]}')
+
+                if not np.any(grouped_xyz):
+                    print("Empty")
+                else :
+                    print(f'값 : {self.mapLimitX}, {self.mapLimitY}, {self.yaml['origin'][0]}, {self.yaml['origin'][1]}')
+                    grouped_xyz[:, 0] = (grouped_xyz[:, 0] + (self.mapLimitX - (self.mapLimitX - abs(self.yaml['origin'][0]))))
+                    grouped_xyz[:, 1] = (abs(grouped_xyz[:, 1]) + (self.mapLimitY - abs(self.yaml['origin'][1])))
+
+                    # arr = arr * -1
+                    grouped_xyz[:, 0] = (grouped_xyz[:, 0] * 8 * 20)
+                    grouped_xyz[:, 1] = (grouped_xyz[:, 1] * 8 * 20)
+
+                    grouped_xyz = np.round(grouped_xyz).astype(int)
+
+                print(f'show status over : {grouped_xyz}')
+
+                self.pixmap4.fill(Qt.transparent)  # 🎯 fill()을 먼저 실행
+                # 🔴 빨간색 굵은 "X" 표시 (goal_position)
+                goal_x, goal_y = int(grouped_xyz[2,0]), int(grouped_xyz[2,1])
+                positionPainter.setPen(QPen(Qt.red, 5, Qt.SolidLine))  # 빨간색, 두께 5
+                positionPainter.drawLine(goal_x - 10, goal_y - 10, goal_x + 10, goal_y + 10)  # X의 대각선 1
+                positionPainter.drawLine(goal_x + 10, goal_y - 10, goal_x - 10, goal_y + 10)  # X의 대각선 2
+
+                # cur_x, cur_y = int(grouped_xyz[0,0] - (pinky1_size/2)), int(grouped_xyz[0,1] - (pinky1_size/2))
+                # print("cur : ", cur_x, cur_y)
+                # try:
+                #     self.pinky1.setGeometry(cur_x, cur_y, pinky1_size, pinky1_size)
+                # except Exception as e:
+                #     print(f"Error setting geometry: {e}")
+                # # self.pinky1.show()
+                
+                # 🔵 초록색 동그라미 (start_position)
+                cur_x, cur_y = int(grouped_xyz[0,0]), int(grouped_xyz[0,1])
+                print("cur : ", cur_x, cur_y)
+                positionPainter.setPen(QPen(Qt.green, 5, Qt.SolidLine))  # 파란색, 두께 3
+                positionPainter.drawEllipse(cur_x - 15, cur_y - 15, 30, 30)  # (x-10, y-10)에서 20x20 크기의 원
+
+                # 🔵 파란색 동그라미 (start_position)
+                start_x, start_y = int(grouped_xyz[1,0]), int(grouped_xyz[1,1])
+                positionPainter.setPen(QPen(Qt.blue, 3, Qt.SolidLine))  # 파란색, 두께 3
+                positionPainter.drawEllipse(start_x - 10, start_y - 10, 20, 20)  # (x-10, y-10)에서 20x20 크기의 원
+
+                positionPainter.end()
+
+                # 변경된 QPixmap을 위젯에 다시 설정하여 업데이트 반영
+                self.pinky_status_2.setPixmap(self.pixmap4)
             else:
                 print("Status No signal available or empty.")
                 positionPainter.end()
@@ -571,6 +746,9 @@ class WindowClass(QMainWindow, from_class) :
                 #  UI 강제 업데이트 (변경이 보장되도록)
                 QApplication.processEvents()                
                 self.previous_table_status[table_id] = status_id   # 현재 상태를 저장하여 다음 비교 시 활용
+        
+
+        
 
     def get_status_text(self, status_id):  # 테이블 상태 ID를 텍스트로 변환하는 함수
         status_mapping = {1: "비어있음", 2: "사용중", 3: "청소중"} # 상태 ID를 상태 이름으로 변환
