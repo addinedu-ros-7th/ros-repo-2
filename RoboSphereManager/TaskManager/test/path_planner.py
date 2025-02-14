@@ -346,9 +346,12 @@ def make_path(robot_id, command, table_id, target):
 
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect(('localhost', 9154))  # 서버 주소와 포트
-            print(f"서버 localhost:9154에 연결 성공")
-
+            if robot_id == "pinky1":
+                s.connect(('192.168.5.12', 9154))  # 서버 주소와 포트
+            else :
+                s.connect(('192.168.5.48', 9154))  # 서버 주소와 포트
+                
+            print(f"서버 192.168.5.12:9154에 연결 성공")
             s.sendall(signal_json.encode('utf-8'))  # 정상적으로 인코딩하여 전송
 
             # 서버 응답 받기
@@ -358,7 +361,7 @@ def make_path(robot_id, command, table_id, target):
             # return response  # 응답 반환 후 함수 종료
 
     except (socket.error, ConnectionRefusedError) as e:
-        print(f"서버 localhost:9154에 연결 실패: {e}.")
+        print(f"서버 192.168.5.12:9154에 연결 실패: {e}.")
 
 
 def main(args=None):
