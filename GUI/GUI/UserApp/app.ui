@@ -203,10 +203,26 @@
        <bool>true</bool>
       </property>
      </widget>
-     <widget class="QLabel" name="pinky_status">
+     <widget class="QLabel" name="pinky_status_1">
       <property name="geometry">
        <rect>
-        <x>190</x>
+        <x>60</x>
+        <y>100</y>
+        <width>66</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::VLine</enum>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="pinky_status_2">
+      <property name="geometry">
+       <rect>
+        <x>150</x>
         <y>90</y>
         <width>66</width>
         <height>19</height>
@@ -219,13 +235,42 @@
        <string/>
       </property>
      </widget>
+     <widget class="QLabel" name="pinky1">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>30</y>
+        <width>66</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="pinky2">
+      <property name="geometry">
+       <rect>
+        <x>140</x>
+        <y>20</y>
+        <width>66</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
      <zorder>label_7</zorder>
      <zorder>label_10</zorder>
      <zorder>label_9</zorder>
      <zorder>label_8</zorder>
      <zorder>label_11</zorder>
      <zorder>prev_btn</zorder>
-     <zorder>pinky_status</zorder>
+     <zorder>pinky_status_2</zorder>
+     <zorder>pinky1</zorder>
+     <zorder>pinky2</zorder>
+     <zorder>pinky_status_1</zorder>
     </widget>
     <widget class="QWidget" name="page_3">
      <widget class="QLineEdit" name="password_input">

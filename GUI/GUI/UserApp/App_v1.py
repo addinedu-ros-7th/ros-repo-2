@@ -493,7 +493,7 @@ class WindowClass(QMainWindow, from_class) :
                 while True:
                     conn, addr = s.accept()
                     with conn:
-                        # print('Connected by', addr)
+                        print('Connected by', addr)
                         data = conn.recv(1024)
                         if not data:
                             break
@@ -517,7 +517,7 @@ class WindowClass(QMainWindow, from_class) :
                 while True:
                     conn, addr = s.accept()
                     with conn:
-                        # print('Connected by', addr)
+                        print('Connected by', addr)
                         data = conn.recv(1024)
                         if not data:
                             break
@@ -559,11 +559,11 @@ class WindowClass(QMainWindow, from_class) :
         path = '/home/kjj73/test_folder/data/'
         pinky_emotion = path+'pinky_emoticon.png'
 
-        self.pinky1.setGeometry(0, 0, pinky1_size, pinky1_size)
-        self.pixmap3 = QPixmap()
-        self.pixmap3.load(pinky_emotion)
-        self.pixmap3 = self.pixmap3.scaled(pinky1_size, pinky1_size)
-        self.pinky1.setPixmap(self.pixmap3)
+        # self.pinky1.setGeometry(0, 0, pinky1_size, pinky1_size)
+        # self.pixmap3 = QPixmap()
+        # self.pixmap3.load(pinky_emotion)
+        # self.pixmap3 = self.pixmap3.scaled(pinky1_size, pinky1_size)
+        # self.pinky1.setPixmap(self.pixmap3)
 
         while True:
             positionPainter = QPainter(self.pixmap2)
@@ -618,12 +618,12 @@ class WindowClass(QMainWindow, from_class) :
                 cur_x, cur_y = int(grouped_xyz[0,0]), int(grouped_xyz[0,1])
                 print("cur : ", cur_x, cur_y)
                 positionPainter.setPen(QPen(Qt.green, 5, Qt.SolidLine))  # 파란색, 두께 3
-                positionPainter.drawEllipse(cur_x - 15, cur_y - 15, 30, 30)  # (x-10, y-10)에서 20x20 크기의 원
+                positionPainter.drawEllipse(cur_x - 15, cur_y - 20, 30, 30)  # (x-10, y-10)에서 20x20 크기의 원
 
                 # 🔵 파란색 동그라미 (start_position)
                 start_x, start_y = int(grouped_xyz[1,0]), int(grouped_xyz[1,1])
                 positionPainter.setPen(QPen(Qt.blue, 3, Qt.SolidLine))  # 파란색, 두께 3
-                positionPainter.drawEllipse(start_x - 10, start_y - 10, 20, 20)  # (x-10, y-10)에서 20x20 크기의 원
+                positionPainter.drawEllipse(start_x - 10, start_y - 15, 20, 20)  # (x-10, y-10)에서 20x20 크기의 원
 
                 positionPainter.end()
 
@@ -636,9 +636,9 @@ class WindowClass(QMainWindow, from_class) :
 
     def show_status_2(self):
         # 큐에서 최신 배터리 상태를 가져와서 출력
-        self.pinky_status_2.setGeometry(0,0, self.label_7.width(), self.label_7.height())
+        self.pinky_status_2.setGeometry(0, 0, self.label_7.width(), self.label_7.height())
         self.pixmap4 = QPixmap(self.label_7.width(), self.label_7.height())
-        self.pixmap4.fill(Qt.transparent)  # 🎯 fill()을 먼저 실행
+        self.pixmap4.fill(Qt.transparent)  # 투명하게 초기화
         self.pinky_status_2.setPixmap(self.pixmap4)
         # self.pinky_status.fill(Qt.transparent)
         # self.pinky_status.pixmap().fill(Qt.transparent)
@@ -647,13 +647,13 @@ class WindowClass(QMainWindow, from_class) :
 
         pinky1_size = 50
         path = '/home/kjj73/test_folder/data/'
-        pinky_emotion = path+'pinky_emoticon.png'
+        pinky_emotion = path + 'pinky_emoticon.png'
 
-        self.pinky2.setGeometry(0, 0, pinky1_size, pinky1_size)
-        self.pixmap4 = QPixmap()
-        self.pixmap4.load(pinky_emotion)
-        self.pixmap4 = self.pixmap4.scaled(pinky1_size, pinky1_size)
-        self.pinky2.setPixmap(self.pixmap4)
+        # self.pinky2.setGeometry(0, 0, pinky1_size, pinky1_size)
+        # self.pixmap4 = QPixmap()
+        # self.pixmap4.load(pinky_emotion)
+        # self.pixmap4 = self.pixmap4.scaled(pinky1_size, pinky1_size)
+        # self.pinky2.setPixmap(self.pixmap4)
 
         while True:
             positionPainter = QPainter(self.pixmap4)
@@ -671,8 +671,8 @@ class WindowClass(QMainWindow, from_class) :
                     for pos in positions
                 ], dtype=np.float32)
 
-                print(f'show status original : {grouped_xyz}')
-                print(f'show status [:,0] : {grouped_xyz[:,0]}')
+                print(f'pinky2 show status original : {grouped_xyz}')
+                print(f'pinky2 show status [:,0] : {grouped_xyz[:,0]}')
 
                 if not np.any(grouped_xyz):
                     print("Empty")
@@ -687,7 +687,7 @@ class WindowClass(QMainWindow, from_class) :
 
                     grouped_xyz = np.round(grouped_xyz).astype(int)
 
-                print(f'show status over : {grouped_xyz}')
+                print(f'pinky2 show status over : {grouped_xyz}')
 
                 self.pixmap4.fill(Qt.transparent)  # 🎯 fill()을 먼저 실행
                 # 🔴 빨간색 굵은 "X" 표시 (goal_position)
@@ -708,21 +708,94 @@ class WindowClass(QMainWindow, from_class) :
                 cur_x, cur_y = int(grouped_xyz[0,0]), int(grouped_xyz[0,1])
                 print("cur : ", cur_x, cur_y)
                 positionPainter.setPen(QPen(Qt.green, 5, Qt.SolidLine))  # 파란색, 두께 3
-                positionPainter.drawEllipse(cur_x - 15, cur_y - 15, 30, 30)  # (x-10, y-10)에서 20x20 크기의 원
+                positionPainter.drawEllipse(cur_x - 35, cur_y - 60, 30, 30)  # (x-10, y-10)에서 20x20 크기의 원
 
                 # 🔵 파란색 동그라미 (start_position)
                 start_x, start_y = int(grouped_xyz[1,0]), int(grouped_xyz[1,1])
                 positionPainter.setPen(QPen(Qt.blue, 3, Qt.SolidLine))  # 파란색, 두께 3
-                positionPainter.drawEllipse(start_x - 10, start_y - 10, 20, 20)  # (x-10, y-10)에서 20x20 크기의 원
+                positionPainter.drawEllipse(start_x - 30, start_y - 55, 20, 20)  # (x-10, y-10)에서 20x20 크기의 원
 
                 positionPainter.end()
-
+                
+                print("pinky2 draw!!!!")
                 # 변경된 QPixmap을 위젯에 다시 설정하여 업데이트 반영
                 self.pinky_status_2.setPixmap(self.pixmap4)
             else:
                 print("Status No signal available or empty.")
                 positionPainter.end()
             time.sleep(1)
+
+    # def show_status_2(self):
+    #     # 그리기를 위한 pixmap 설정
+    #     self.pinky_status_2.setGeometry(0, 0, self.label_7.width(), self.label_7.height())
+    #     self.pixmap4 = QPixmap(self.label_7.width(), self.label_7.height())
+    #     self.pixmap4.fill(Qt.transparent)  # 투명하게 초기화
+    #     self.pinky_status_2.setPixmap(self.pixmap4)
+
+    #     pinky1_size = 50
+    #     path = '/home/kjj73/test_folder/data/'
+    #     pinky_emotion = path + 'pinky_emoticon.png'
+
+    #     # self.pinky2.setGeometry(0, 0, pinky1_size, pinky1_size)
+    #     # self.pixmap4 = QPixmap()
+    #     # self.pixmap4.load(pinky_emotion)
+    #     # self.pixmap4 = self.pixmap4.scaled(pinky1_size, pinky1_size)
+    #     # self.pinky2.setPixmap(self.pixmap4)
+
+    #     while True:
+    #         # QPainter로 pixmap에 그림 그리기
+    #         # self.pixmap4 = QPixmap(self.label_7.width(), self.label_7.height())
+    #         # self.pixmap4.fill(Qt.transparent)  # 투명하게 초기화
+    #         # self.pinky_status_2.setPixmap(self.pixmap4)
+
+    #         positionPainter = QPainter(self.pixmap4)
+    #         if not self.status_queue_2.empty():
+    #             signal = self.status_queue_2.get()
+    #             positions = ['current_position', 'start_position', 'goal_position']
+    #             grouped_xyz = np.array([
+    #                 np.array([signal[pos]['x'], signal[pos]['y'], signal[pos]['z']], dtype=np.float32)
+    #                 for pos in positions
+    #             ], dtype=np.float32)
+
+    #             # 좌표 변환 적용
+    #             grouped_xyz[:, 0] = (grouped_xyz[:, 0] + (self.mapLimitX - (self.mapLimitX - abs(self.yaml['origin'][0]))))
+    #             grouped_xyz[:, 1] = (abs(grouped_xyz[:, 1]) + (self.mapLimitY - abs(self.yaml['origin'][1])))
+
+    #             grouped_xyz[:, 0] = (grouped_xyz[:, 0] * 8 * 20)
+    #             grouped_xyz[:, 1] = (grouped_xyz[:, 1] * 8 * 20)
+
+    #             grouped_xyz = np.round(grouped_xyz).astype(int)
+
+    #             # 그리기 전에 pixmap을 투명하게 초기화
+    #             self.pixmap4.fill(Qt.transparent)
+
+    #             # 목표 지점 (빨간색 X)
+    #             goal_x, goal_y = int(grouped_xyz[2, 0]), int(grouped_xyz[2, 1])
+    #             positionPainter.setPen(QPen(Qt.red, 5, Qt.SolidLine))
+    #             positionPainter.drawLine(goal_x - 10, goal_y - 10, goal_x + 10, goal_y + 10)
+    #             positionPainter.drawLine(goal_x + 10, goal_y - 10, goal_x - 10, goal_y + 10)
+
+    #             # 🔵 초록색 동그라미 (start_position)
+    #             cur_x, cur_y = int(grouped_xyz[0,0]), int(grouped_xyz[0,1])
+    #             print("cur : ", cur_x, cur_y)
+    #             positionPainter.setPen(QPen(Qt.green, 5, Qt.SolidLine))  # 파란색, 두께 3
+    #             positionPainter.drawEllipse(cur_x - 15, cur_y - 35, 30, 30)  # (x-10, y-10)에서 20x20 크기의 원
+
+    #             # 🔵 파란색 동그라미 (start_position)
+    #             start_x, start_y = int(grouped_xyz[1,0]), int(grouped_xyz[1,1])
+    #             positionPainter.setPen(QPen(Qt.blue, 3, Qt.SolidLine))  # 파란색, 두께 3
+    #             positionPainter.drawEllipse(start_x - 10, start_y - 30, 20, 20)  # (x-10, y-10)에서 20x20 크기의 원
+
+    #             # 그리기가 끝났으면 end() 호출
+    #             positionPainter.end()
+
+    #             # 위젯에 pixmap을 다시 설정하여 변경된 내용 반영
+    #             self.pinky_status_2.setPixmap(self.pixmap4)
+    #         else:
+    #             print("Status No signal available or empty.")
+
+    #         time.sleep(1)
+
 
     def check_table_status(self): # MySQL에서 테이블 상태 변화를 감지하고, UI 업데이트
         #  MySQL 최신 데이터 반영 (연결 유지 & 커밋)

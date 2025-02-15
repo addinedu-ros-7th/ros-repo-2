@@ -174,11 +174,15 @@ background-color: rgb(233, 233, 233);</string>
       <widget class="QLabel" name="pinky_status_2">
        <property name="geometry">
         <rect>
-         <x>790</x>
-         <y>680</y>
-         <width>66</width>
-         <height>19</height>
+         <x>230</x>
+         <y>100</y>
+         <width>61</width>
+         <height>21</height>
         </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background: transparent;
+</string>
        </property>
        <property name="frameShape">
         <enum>QFrame::VLine</enum>
@@ -190,11 +194,15 @@ background-color: rgb(233, 233, 233);</string>
       <widget class="QLabel" name="pinky_status_1">
        <property name="geometry">
         <rect>
-         <x>390</x>
-         <y>540</y>
+         <x>140</x>
+         <y>100</y>
          <width>66</width>
          <height>19</height>
         </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background: transparent;
+</string>
        </property>
        <property name="frameShape">
         <enum>QFrame::VLine</enum>
@@ -339,8 +347,6 @@ background-color: rgb(233, 233, 233);</string>
       <zorder>label_7</zorder>
       <zorder>layoutWidget</zorder>
       <zorder>layoutWidget</zorder>
-      <zorder>pinky_status_2</zorder>
-      <zorder>pinky_status_1</zorder>
       <zorder>pinky2</zorder>
       <zorder>pinky1</zorder>
       <zorder>label_8</zorder>
@@ -348,6 +354,8 @@ background-color: rgb(233, 233, 233);</string>
       <zorder>label_12</zorder>
       <zorder>label_9</zorder>
       <zorder>label_10</zorder>
+      <zorder>pinky_status_1</zorder>
+      <zorder>pinky_status_2</zorder>
      </widget>
      <widget class="QWidget" name="page_2">
       <widget class="QWidget" name="layoutWidget_2">

@@ -1,1 +1,0 @@
-# RoboSphere UserApp GUI

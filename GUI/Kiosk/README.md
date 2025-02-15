@@ -1,1 +1,0 @@
-# RoboSphere kiosk GUI

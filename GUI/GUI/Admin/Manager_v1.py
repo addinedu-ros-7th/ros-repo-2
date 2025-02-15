@@ -99,7 +99,7 @@ class WindowClass(QMainWindow, from_class):
 
         # ✅ 초기 데이터 불러오기
         self.load_table_status()
-        self.setup_robot_data()
+        # self.setup_robot_data()
 
         ###
         self.filepath = '/home/kjj73/test_folder/data/'
@@ -178,12 +178,18 @@ class WindowClass(QMainWindow, from_class):
         self.previous_table_status = {}  # 이전 테이블 상태 저장
         self.check_in_status = {} #입실 여부를 저장하는 딕셔너리 초기화
 
+        self.prev_pinky1_bettery = None
+        self.prev_pinky2_bettery = None
+        self.prev_pinky1_status = None
+        self.prev_pinky2_status = None
+        
         latest_status = threading.Thread(target=self.status_latest, daemon=True)
         latest_status.start()
 
     def status_latest(self):
-        self.setup_robot_data()
-        time.sleep(1)
+        while True:
+            self.setup_robot_data()
+            time.sleep(0.5)
 
     def pinky1_receive_tcp_bettery(self):
         try:
@@ -245,11 +251,11 @@ class WindowClass(QMainWindow, from_class):
         while True:
             if not self.pinky1_bettery_queue.empty():
                 signal = self.pinky1_bettery_queue.get()
-                print(f'Bettery: {signal["bettery"]}')
+                print(f'Bettery1: {signal["bettery"]}')
                 with dict_lock:  # 락을 걸고 데이터를 수정
                     pinky1_latest_status['pinkyBettery'] = str(signal["bettery"])
             else:
-                print("Bettery No signal available or empty.")
+                print("pinky1 Bettery No signal available or empty.")
             time.sleep(1)
 
     # 받은 시그널 처리
@@ -264,11 +270,11 @@ class WindowClass(QMainWindow, from_class):
         while True:
             if not self.pinky2_bettery_queue.empty():
                 signal = self.pinky2_bettery_queue.get()
-                print(f'Bettery: {signal["bettery"]}')
+                print(f'Bettery2: {signal["bettery"]}')
                 with dict_lock:  # 락을 걸고 데이터를 수정
                     pinky2_latest_status['pinkyBettery'] = str(signal["bettery"])
             else:
-                print("Bettery No signal available or empty.")
+                print("pinky2 Bettery No signal available or empty.")
             time.sleep(1)
 
     def pinky1_receive_tcp_status(self):
@@ -350,11 +356,11 @@ class WindowClass(QMainWindow, from_class):
         path = '/home/kjj73/test_folder/data/'
         pinky_emotion = path+'pinky_emoticon.png'
 
-        self.pinky1.setGeometry(0, 0, pinky1_size, pinky1_size)
-        self.pixmap3 = QPixmap()
-        self.pixmap3.load(pinky_emotion)
-        self.pixmap3 = self.pixmap3.scaled(pinky1_size, pinky1_size)
-        self.pinky1.setPixmap(self.pixmap3)
+        # self.pinky1.setGeometry(0, 0, pinky1_size, pinky1_size)
+        # self.pixmap3 = QPixmap()
+        # self.pixmap3.load(pinky_emotion)
+        # self.pixmap3 = self.pixmap3.scaled(pinky1_size, pinky1_size)
+        # self.pinky1.setPixmap(self.pixmap3)
 
         while True:
             positionPainter = QPainter(self.pixmap2)
@@ -411,12 +417,12 @@ class WindowClass(QMainWindow, from_class):
                 cur_x, cur_y = int(grouped_xyz[0,0]), int(grouped_xyz[0,1])
                 print("cur : ", cur_x, cur_y)
                 positionPainter.setPen(QPen(Qt.green, 5, Qt.SolidLine))  # 파란색, 두께 3
-                positionPainter.drawEllipse(cur_x - 15, cur_y - 15, 30, 30)  # (x-10, y-10)에서 20x20 크기의 원
+                positionPainter.drawEllipse(cur_x - 10, cur_y - 10, 30, 30)  # (x-10, y-10)에서 20x20 크기의 원
 
                 # 🔵 파란색 동그라미 (start_position)
                 start_x, start_y = int(grouped_xyz[1,0]), int(grouped_xyz[1,1])
                 positionPainter.setPen(QPen(Qt.blue, 3, Qt.SolidLine))  # 파란색, 두께 3
-                positionPainter.drawEllipse(start_x - 10, start_y - 10, 20, 20)  # (x-10, y-10)에서 20x20 크기의 원
+                positionPainter.drawEllipse(start_x - 5, start_y - 5, 20, 20)  # (x-10, y-10)에서 20x20 크기의 원
 
                 positionPainter.end()
 
@@ -442,11 +448,11 @@ class WindowClass(QMainWindow, from_class):
         path = '/home/kjj73/test_folder/data/'
         pinky_emotion = path+'pinky_emoticon.png'
 
-        self.pinky2.setGeometry(0, 0, pinky1_size, pinky1_size)
-        self.pixmap4 = QPixmap()
-        self.pixmap4.load(pinky_emotion)
-        self.pixmap4 = self.pixmap4.scaled(pinky1_size, pinky1_size)
-        self.pinky2.setPixmap(self.pixmap4)
+        # self.pinky2.setGeometry(0, 0, pinky1_size, pinky1_size)
+        # self.pixmap4 = QPixmap()
+        # self.pixmap4.load(pinky_emotion)
+        # self.pixmap4 = self.pixmap4.scaled(pinky1_size, pinky1_size)
+        # self.pinky2.setPixmap(self.pixmap4)
 
         while True:
             positionPainter = QPainter(self.pixmap4)
@@ -458,7 +464,7 @@ class WindowClass(QMainWindow, from_class):
                 # 위치 정보를 담고 있는 키 목록
                 task_status = signal['status']
                 with dict_lock:  # 락을 걸고 데이터를 수정
-                    pinky1_latest_status['pinkyStatus'] = str(task_status)
+                    pinky2_latest_status['pinkyStatus'] = str(task_status)
                 # 각 위치의 x, y, z 값을 실수형(float) NumPy 배열로 변환
                 positions = ['current_position', 'start_position', 'goal_position']
                 grouped_xyz = np.array([
@@ -503,12 +509,12 @@ class WindowClass(QMainWindow, from_class):
                 cur_x, cur_y = int(grouped_xyz[0,0]), int(grouped_xyz[0,1])
                 print("cur : ", cur_x, cur_y)
                 positionPainter.setPen(QPen(Qt.green, 5, Qt.SolidLine))  # 파란색, 두께 3
-                positionPainter.drawEllipse(cur_x - 15, cur_y - 15, 30, 30)  # (x-10, y-10)에서 20x20 크기의 원
+                positionPainter.drawEllipse(cur_x - 15, cur_y - 95, 30, 30)  # (x-10, y-10)에서 20x20 크기의 원
 
                 # 🔵 파란색 동그라미 (start_position)
                 start_x, start_y = int(grouped_xyz[1,0]), int(grouped_xyz[1,1])
                 positionPainter.setPen(QPen(Qt.blue, 3, Qt.SolidLine))  # 파란색, 두께 3
-                positionPainter.drawEllipse(start_x - 10, start_y - 10, 20, 20)  # (x-10, y-10)에서 20x20 크기의 원
+                positionPainter.drawEllipse(start_x - 10, start_y - 90, 20, 20)  # (x-10, y-10)에서 20x20 크기의 원
 
                 positionPainter.end()
 
@@ -569,11 +575,20 @@ class WindowClass(QMainWindow, from_class):
         pinky2_bettery = None
         pinky1_status = None
         pinky2_status = None
-        with dict_lock:  # 락을 걸고 데이터를 수정
-            pinky1_bettery = pinky1_latest_status['pinkyBettery']
-            pinky2_bettery = pinky2_latest_status['pinkyBettery']
-            pinky1_status = pinky1_latest_status['pinkyStatus']
-            pinky2_status = pinky2_latest_status['pinkyStatus']
+
+        with dict_lock:
+            # 이전 값 유지 로직 추가
+            pinky1_bettery = pinky1_latest_status.get('pinkyBettery') or self.prev_pinky1_bettery
+            pinky2_bettery = pinky2_latest_status.get('pinkyBettery') or self.prev_pinky2_bettery
+            pinky1_status = pinky1_latest_status.get('pinkyStatus') or self.prev_pinky1_status
+            pinky2_status = pinky2_latest_status.get('pinkyStatus') or self.prev_pinky2_status
+
+        # 기존 값을 업데이트
+        self.prev_pinky1_bettery = pinky1_bettery
+        self.prev_pinky2_bettery = pinky2_bettery
+        self.prev_pinky1_status = pinky1_status
+        self.prev_pinky2_status = pinky2_status
+
         # str(energy)
         data = [
             [str("RoboSpere1"), str(pinky1_status), str(pinky1_bettery)],
