@@ -161,7 +161,7 @@
 #### Aruco Marker 감지 후 현재 좌표 계산, 이동할 좌표로 회전 & 전진 상태 반복하며 위치 조정
 > ![image](https://github.com/user-attachments/assets/ddb10b54-8cd1-4c21-8ee2-d1de9cfdf5b5)
 
---
+---
 
 ## 트러블 슈팅
 ### 1. 모터
